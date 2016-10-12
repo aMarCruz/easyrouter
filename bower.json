@@ -1,0 +1,32 @@
+{
+  "name": "easyrouter",
+  "description": "Tiny, fast, easy, yet powerful hash router in JavaScript",
+  "main": "dist/easyrouter.umd.js",
+  "module": "dist/easyrouter.es6.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "authors": [{
+    "name": "aMarCruz",
+    "email": "amarcruzbox-git@yahoo.com",
+    "url": "https://github.com/aMarCruz"
+  }],
+  "license": "MIT",
+  "keywords": [
+    "html5",
+    "router",
+    "javascript",
+    "location",
+    "hash"
+  ],
+  "homepage": "https://github.com/aMarCruz/easyrouter",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

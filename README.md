@@ -8,7 +8,7 @@ npm or bower
 
 ```bash
 npm i easyrouter --save
-bower i easyrouter --save
+bower install easyrouter --save
 ```
 
 ## Example
