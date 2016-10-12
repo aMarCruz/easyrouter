@@ -1,0 +1,14 @@
+env:
+  mocha: true
+  node: true
+  es6: false
+
+parserOptions:
+  ecmaVersion: 5
+  sourceType: "script"
+
+rules:
+  no-console: 0
+  no-debugger: 0
+  no-var: 0
+  prefer-template: 0

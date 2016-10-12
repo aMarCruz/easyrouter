@@ -1,0 +1,5 @@
+dist/**
+**/coverage
+**/test/expect
+**/test/fixtures
+**.md

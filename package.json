@@ -1,0 +1,56 @@
+{
+  "name": "easyrouter",
+  "version": "0.1.0",
+  "description": "Tiny, fast, easy, yet powerful hash router in JavaScript",
+  "main": "dist/easyrouter.js",
+  "module": "dist/easyrouter.es.js",
+  "jsnext:main": "dist/easyrouter.es.js",
+  "engines": {
+    "node": ">=4.0"
+  },
+  "scripts": {
+    "test": "mocha",
+    "lint": "eslint src",
+    "pretest": "rollup --environment BUILD:test -c -m -f cjs -o dist/easyrouter.js",
+    "build": "rm -rf dist/* && npm run build:cjs && npm run build:es6 && npm run build:umd",
+    "build:cjs": "rollup -c -f cjs -o dist/easyrouter.js",
+    "build:es6": "rollup -c -f es -o dist/easyrouter.es.js",
+    "build:umd": "rollup -c -f umd -n router -o dist/easyrouter.umd.js",
+    "prepublish": "npm run lint && npm test && npm run build"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aMarCruz/easyrouter.git"
+  },
+  "keywords": [
+    "html5",
+    "router",
+    "javascript",
+    "location",
+    "hash"
+  ],
+  "author": {
+    "name": "aMarCruz",
+    "email": "amarcruzbox-git@yahoo.com",
+    "url": "https://github.com/aMarCruz"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aMarCruz/easyrouter/issues"
+  },
+  "homepage": "https://github.com/aMarCruz/easyrouter#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "buble": "^0.14.0",
+    "eslint": "^3.7.1",
+    "expect": "^1.20.2",
+    "mocha": "^3.1.0",
+    "rollup": "^0.36.1",
+    "rollup-plugin-buble": "^0.14.0",
+    "rollup-plugin-jscc": "^0.2.1"
+  }
+}
