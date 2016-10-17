@@ -5,6 +5,7 @@
   "main": "dist/easyrouter.js",
   "module": "dist/easyrouter.es.js",
   "jsnext:main": "dist/easyrouter.es.js",
+  "browser": "dist/easyrouter.umd.js",
   "engines": {
     "node": ">=4.0"
   },
@@ -16,7 +17,8 @@
     "build:cjs": "rollup -c -f cjs -o dist/easyrouter.js",
     "build:es6": "rollup -c -f es -o dist/easyrouter.es.js",
     "build:umd": "rollup -c -f umd -n router -o dist/easyrouter.umd.js",
-    "prepublish": "npm run lint && npm test && npm run build"
+    "prepublish": "npm run lint && npm test && npm run build",
+    "min": "uglifyjs dist/easyrouter.umd.js --screw-ie8 -v -m -c -o test/easyrouter.min.js"
   },
   "files": [
     "dist",

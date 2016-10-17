@@ -121,7 +121,7 @@ describe('match', function () {
 })
 
 
-describe('dispatch', function () {
+describe('`_run`', function () {
   var routes = [
     {
       path: '#/recursos',
@@ -151,7 +151,7 @@ describe('dispatch', function () {
   it('must call action with `this.path` set to the rule', function () {
     var hash = routes[0].path
 
-    router.add(hash, function () {
+    router.add(routes[0], function () {
       expect(this.path).toBe(hash)
     })
 
@@ -159,7 +159,7 @@ describe('dispatch', function () {
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
-    var result = router.dispatch(hash)
+    var result = router._run(hash)
     expect(result).toNotBe(false)
     expect(spy).toHaveBeenCalled()
     expect(spy.calls[0].context).toBe(route)
@@ -168,11 +168,11 @@ describe('dispatch', function () {
   it('must call action once for the same rule', function () {
     var hash = routes[0].path
 
-    router.add(hash, function () {
+    router.add(routes[0], function () {
       throw new Error('This must be not called')
     })
 
-    var result = router.dispatch(hash)
+    var result = router._run(hash)
     expect(result).toBe(false)
   })
 
@@ -180,7 +180,7 @@ describe('dispatch', function () {
     var elem = routes[3]
     var hash = elem.path
 
-    router.concat([elem], function () {
+    router.add(elem, function () {
       expect(this.path).toBe(hash)
       expect(this.title).toBe(elem.title)
     })
@@ -189,7 +189,7 @@ describe('dispatch', function () {
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
-    var result = router.dispatch(hash)
+    var result = router._run(hash)
     expect(result).toNotBe(false)
     expect(spy).toHaveBeenCalled()
   })
@@ -198,7 +198,7 @@ describe('dispatch', function () {
     var elem = routes[1]
     var hash = elem.path
 
-    router.concat([elem], function () {
+    router.add(elem, function () {
       expect(this.path).toBe(hash)
     })
 
@@ -206,7 +206,7 @@ describe('dispatch', function () {
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
-    var result = router.dispatch(hash.replace(':id', 5))
+    var result = router._run(hash.replace(':id', 5))
     expect(result).toNotBe(false)
     expect(spy).toHaveBeenCalledWith({ id: '5' })
   })
@@ -215,7 +215,7 @@ describe('dispatch', function () {
     var elem = routes[2]
     var hash = elem.path
 
-    router.concat([elem], function () {
+    router.add(elem, function () {
       expect(this.path).toBe(hash)
     })
 
@@ -223,7 +223,7 @@ describe('dispatch', function () {
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
-    var result = router.dispatch(hash.replace(':id', 5).replace(':foo', 'bar'))
+    var result = router._run(hash.replace(':id', 5).replace(':foo', 'bar'))
     expect(result).toNotBe(false)
     expect(spy).toHaveBeenCalledWith({ id: '5', foo: 'bar' })
   })
@@ -232,7 +232,7 @@ describe('dispatch', function () {
     var elem = routes[4]
     var hash = elem.path
 
-    router.concat([elem], function () {
+    router.add(elem, function () {
       expect(this.path).toBe(hash)
     })
 
@@ -240,7 +240,7 @@ describe('dispatch', function () {
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
-    var result = router.dispatch(hash.replace('/*', '/foo/bar'))
+    var result = router._run(hash.replace('/*', '/foo/bar'))
     expect(result).toNotBe(false)
     expect(spy).toHaveBeenCalled()
   })
@@ -249,7 +249,7 @@ describe('dispatch', function () {
     var elem = routes[5]
     var hash = elem.path
 
-    router.concat([elem], function () {
+    router.add(elem, function () {
       expect(this.path).toBe(hash)
     })
 
@@ -258,7 +258,7 @@ describe('dispatch', function () {
 
     var spy = expect.spyOn(route, 'enter')
 
-    var result = router.dispatch(hash.replace(':id', 5).replace('/*', '/foo/bar'))
+    var result = router._run(hash.replace(':id', 5).replace('/*', '/foo/bar'))
     expect(result).toNotBe(false)
     expect(spy).toHaveBeenCalledWith({ id: '5' })
   })

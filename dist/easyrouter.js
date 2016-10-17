@@ -14,11 +14,8 @@ function normalize (hash) {
   }
 
   // only removing if length > 2 allows '#/'
-  if (hash.length > 2 && hash.slice(-1) === '/') {
-    hash = hash.slice(0, -1);
-  }
-
-  return hash
+  return hash.length > 2 && hash.slice(-1) === '/'
+       ? hash.slice(0, -1) : hash
 }
 
 /*
@@ -94,6 +91,31 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
     return ctx
   }
 
+  /*
+    Main method to define a new route.
+   */
+  function _add (src, cb) {
+    var path = normalize(src.path);
+    var route = _routes;
+
+    _split(path).forEach(function (part) {
+      var parm = part[0] === ':' ? ':' : 0;
+      var name = parm || part;
+
+      route = route[name] || (route[name] = {});
+      if (parm) { route['~'] = part.slice(1); }
+    });
+
+    route = route['@'] = { enter: cb };
+
+    if (src) {
+      Object.keys(src).forEach(function (p) {
+        route[p] = p === 'path' ? path : src[p];
+      });
+    }
+    return route
+  }
+
 
   var _R = {
 
@@ -115,41 +137,6 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
     },
 
     /**
-     * Main method to define a new route.
-     *
-     * @param   {String}   path  - The path that defines the route
-     * @param   {Function} [cb]  - Callback function
-     * @param   {Object}   [cfg] - Additional configuration
-     * @returns {Object}   The new route
-     */
-    add: function add (path, cb, cfg) {
-      var parts = _split(path);
-      var route = _routes;
-
-      if (cb && typeof cb == 'object' && !cfg) {
-        cfg = cb;
-        cb = UNDEF;
-      }
-
-      parts.forEach(function (part) {
-        var name = part[0] === ':' ? ':' : part;
-
-        route = route[name] || (route[name] = {});
-        if (name === ':') { route['~'] = part.slice(1); }
-      });
-
-      route = route['@'] = { enter: cb };
-
-      if (cfg) {
-        Object.keys(cfg).forEach(function (p) {
-          route[p] = cfg[p];
-        });
-      }
-      route.path = path;
-      return route
-    },
-
-    /**
      * Allows to define one or more routes.
      *
      * @param   {Array}    arr  - Array of templates for the routes
@@ -157,11 +144,13 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
      * @returns {Object}   This chainable object
      */
     concat: function concat (arr, cb) {
-      var this$1 = this;
-
       cb = _fn(cb);
 
-      arr.forEach(function (src) { this$1.add(src.path, cb, src); });
+      if (Array.isArray(arr)) {
+        arr.forEach(function (src) { _add(src, cb); });
+      } else {
+        _add(arr, cb);
+      }
       return this
     },
 
@@ -193,7 +182,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
     },
 
     /**
-     * Return an object with { ruote, params } for matching route
+     * Returns an object with { ruote, params } for matching route
      *
      * @param   {string} hash - normalized hash
      * @returns {object} `false` if href has not matching route
@@ -211,7 +200,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
      * @param   {string}  hash - The hash to run
      * @returns {boolean} success flag
      */
-    dispatch: function dispatch (hash) {
+    _run: function _run (hash) {
       hash = normalize(hash);
 
       if (_active.hash !== hash) {
@@ -220,10 +209,8 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
 
         // if we have a previous route, call its `exit`
         // method and abort if `exit` returns `false`
-        if (prev && prev.exit) {
-          if (prev.exit(prev.params) === false) {
-            return false
-          }
+        if (prev && prev.exit && prev.exit() === false) {
+          return false
         }
 
         // continue with the global `exit` routine.
@@ -232,6 +219,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
         }
 
         // swap the current route info
+        next.hash = hash;
         _active.hash  = hash;
         _active.route = next;
 
@@ -268,7 +256,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
         _active.hash = '@';
       }
       if (force && normalize(location.hash) === normalize(hash)) {
-        this.dispatch(hash);
+        this._run(hash);
       } else {
         location.hash = hash;
       }
@@ -278,8 +266,8 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
     /**
      * Default handler for hash changes
      */
-    handler: function handler () {
-      this.dispatch(location.hash);
+    _handler: function _handler () {
+      this._run(location.hash);
     },
 
     /**
@@ -298,13 +286,13 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
       }
 
       if ('onhashchange' in window) {
-        window.addEventListener('hashchange', _R.handler, true);
+        window.addEventListener('hashchange', _R._handler, true);
       } else {
         throw new Error('easyRouter: Your browser has no hashchange support')
       }
 
       if (location.hash) {
-        this.dispatch(location.hash);
+        this._run(location.hash);
       }
 
       return this
@@ -313,6 +301,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
   };
 
   Object.defineProperty(_R, 'version', { values: '0.1.0', enumerable: true });
+  _R.add = _R.concat;
 
 
   return _R.reset()

@@ -12,9 +12,6 @@ export default function normalize (hash) {
   }
 
   // only removing if length > 2 allows '#/'
-  if (hash.length > 2 && hash.slice(-1) === '/') {
-    hash = hash.slice(0, -1)
-  }
-
-  return hash
+  return hash.length > 2 && hash.slice(-1) === '/'
+       ? hash.slice(0, -1) : hash
 }
