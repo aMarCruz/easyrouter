@@ -1,3 +1,6 @@
+[![npm Version][npm-image]][npm-url]
+[![License][license-image]][license-url]
+
 # EasyRouter
 
 Tiny, fast, easy, yet powerful hash router in JavaScript.
@@ -258,3 +261,13 @@ function oldRouteExit () {
   }
 }
 ```
+
+
+## License
+
+The [MIT License](LICENCE) (MIT)
+
+[npm-image]:      https://img.shields.io/npm/v/easyrouter.svg
+[npm-url]:        https://www.npmjs.com/package/easyrouter
+[license-image]:  https://img.shields.io/npm/l/express.svg
+[license-url]:    https://github.com/aMarCruz/easyrouter/blob/master/LICENSE
