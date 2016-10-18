@@ -1,6 +1,6 @@
 {
   "name": "easyrouter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tiny, fast, easy, yet powerful hash router in JavaScript",
   "main": "dist/easyrouter.js",
   "module": "dist/easyrouter.es.js",

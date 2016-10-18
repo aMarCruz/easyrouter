@@ -16,16 +16,10 @@ function normalize (hash) {
        ? hash.slice(0, -1) : hash
 }
 
-/*
- * PathJS wrapped module.
- *
- * PathJS is a lightweight, client-side routing library that allows you to create
- * "single page" applications using Hashbangs and/or HTML5 pushState.
- *
- * https://github.com/mtrpcic/pathjs
- *
- * Issues:
- * https://github.com/mtrpcic/pathjs/issues/80
+/**
+ * easyRouter v0.1.2
+ * @author aMarCruz
+ * @license MIT
  */
 var easyRouter = (function _easyRouter (window, UNDEF) {
   'use strict';
@@ -265,7 +259,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
      * Default handler for hash changes
      */
     _handler: function _handler () {
-      this._run(location.hash);
+      _R._run(location.hash);
     },
 
     /**
@@ -298,7 +292,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
 
   };
 
-  Object.defineProperty(_R, 'version', { values: '0.1.0', enumerable: true });
+  Object.defineProperty(_R, 'version', { values: '0.1.2', enumerable: true });
   _R.add = _R.concat;
 
 
