@@ -263,4 +263,53 @@ describe('`_run`', function () {
     expect(spy).toHaveBeenCalledWith({ id: '5' })
   })
 
+  it('must call `rescue` with current hash for non-existing routes', function () {
+    var hash = '#/abcedef'
+    var done = ''
+
+    router.rescue(function (href) {
+      done = '404'
+      expect(href).toBe(hash)
+    })
+
+    var result = router._run(hash)
+    expect(result).toBe(false)
+    expect(done).toBe('404')
+  })
+
+})
+
+describe('get', function () {
+  var routes = [
+    {
+      path: '#/recursos',
+      title: 'Recursos'
+    }, {
+      path: '#/recurso/:id',
+      title: 'Recursos'
+    }, {
+      path: '#/recurso/:id/editar',
+      title: 'Recursos'
+    }, {
+      path: '#/recurso/*/nuevo',
+      title: 'Recursos'
+    }, {
+      path: '#/recurso/nuevo/*',
+      title: 'Recursos'
+    }, {
+      path: '#/',
+      title: 'Home'
+    }
+  ]
+  router.concat(routes)
+
+  it('must find exact plain routes', function () {
+    for (var i = 0; i < routes.length; i++) {
+      var hash = routes[0].path
+      var result = router.get(hash)
+      expect(result).toBeAn('object')
+      expect(result.path).toBe(hash)
+    }
+  })
+
 })

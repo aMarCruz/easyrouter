@@ -1,5 +1,10 @@
 # Changes for easyRouter
 
+### 2016-10-24 v0.1.3
+
+- Fix a bug with non existent route generating error.
+- Updated `devDependencies`.
+
 ### 2016-10-18 v0.1.2
 
 - Fix the `haschange` handler loosing the context.

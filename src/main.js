@@ -160,7 +160,20 @@ const easyRouter = (function _easyRouter (window, UNDEF) {
     },
 
     get (hash) {
-      return _seek(hash, _noop)
+      const parts = _split(normalize(hash))
+      let route = _routes
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        const parm = part[0] === ':' ? ':' : 0
+
+        route = route[parm || part]
+        if (!route) {
+          return UNDEF
+        }
+      }
+
+      return route['@']
     },
 
     /**
@@ -201,7 +214,7 @@ const easyRouter = (function _easyRouter (window, UNDEF) {
         }
 
         // swap the current route info
-        next.hash = hash
+        if (next) next.hash = hash
         _active.hash  = hash
         _active.route = next
 

@@ -5,7 +5,7 @@
 
 Tiny, fast, easy, yet powerful hash router in JavaScript.
 
-* About 2K minified, bellow 1K gzipped
+* About 2K minified, 1K gzipped
 * No performance drop as you add routes
 * Order of route declaration doesn't matter: the most specific route wins
 * Parses query strings
@@ -20,6 +20,17 @@ npm or bower
 npm install easyrouter --save
 bower install easyrouter --save
 ```
+
+The folder `dist` has tree builds:
+
+Filename | Description
+-------- | -----------
+easyrouter.js | CommonJS build for node, browserify, brunch, webpack, etc.
+easyrouter.es.js | ES6 module for rollup or module capable blunder.
+easyrouter.umd.js | UMD build for browsers*
+
+\* easyrouter.umd.js via `<script>` stores the router instance in the global variable `window.router`.
+
 
 ## Example
 
@@ -55,7 +66,7 @@ const routes = [
   }
 ]
 
-// Use the `concat` method for all
+// Use the `add` method to add all the routes
 router
   .add(routes, (route) => {
     console.log(this.hash)
@@ -205,37 +216,37 @@ Additional properties are copied to the route, so can be accessed through `this`
 Each time that the route is matched, its `hash` and `params` properties are updated.
 
 
-## Life Cycle
+## Event Pipeline
 
 This is the order of event when on hash changes:
 
 ```
-             efective hash change
-                      |
-                      v
-          (if there's an old route)
-               oldRoute.exit()
-          (abort if returns `false`)
-                      |
-                      v
-            router.exit(oldRoute)
+              efective hash change
+                       |
+                       v
+           (if there's an old route)
+                oldRoute.exit()
+           (abort if returns `false`)
+                       |
+                       v
+             router.exit(oldRoute)
   (called with undefined if there's no old route)
-                      |
-                      v
+                       |
+                       v
   (here, the router grab the change, so entering
     again this hash will no repeat the process)
-                      |
-                      v
+                       |
+                       v
             router.enter(newRoute)
-                      |
-                      v
+                       |
+                       v
         there's a match for the new hash?
-                      |
-         +------------+-------------+
-         |                          |
-         v                          v
-        Yes                         No
-newRoute.enter(params)      router.rescue(hash)
+                       |
+          +------------+-------------+
+          |                          |
+          v                          v
+         Yes                         No
+newRoute.enter(params)       router.rescue(hash)
 ```
 
 Note that all this work is done after the hash is set in the browser addressbar,

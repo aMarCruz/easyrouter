@@ -17,7 +17,7 @@ function normalize (hash) {
 }
 
 /**
- * easyRouter v0.1.2
+ * easyRouter v0.1.3
  * @author aMarCruz
  * @license MIT
  */
@@ -170,7 +170,20 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
     },
 
     get: function get (hash) {
-      return _seek(hash, _noop)
+      var parts = _split(normalize(hash));
+      var route = _routes;
+
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+        var parm = part[0] === ':' ? ':' : 0;
+
+        route = route[parm || part];
+        if (!route) {
+          return UNDEF
+        }
+      }
+
+      return route['@']
     },
 
     /**
@@ -211,7 +224,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
         }
 
         // swap the current route info
-        next.hash = hash;
+        if (next) { next.hash = hash; }
         _active.hash  = hash;
         _active.route = next;
 
@@ -292,7 +305,7 @@ var easyRouter = (function _easyRouter (window, UNDEF) {
 
   };
 
-  Object.defineProperty(_R, 'version', { values: '0.1.2', enumerable: true });
+  Object.defineProperty(_R, 'version', { values: '0.1.3', enumerable: true });
   _R.add = _R.concat;
 
 
