@@ -155,7 +155,7 @@ describe('`_run`', function () {
       expect(this.path).toBe(hash)
     })
 
-    var route = router.get(hash)
+    var route = router.route(hash)
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
@@ -185,7 +185,7 @@ describe('`_run`', function () {
       expect(this.title).toBe(elem.title)
     })
 
-    var route = router.get(hash)
+    var route = router.route(hash)
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
@@ -202,7 +202,7 @@ describe('`_run`', function () {
       expect(this.path).toBe(hash)
     })
 
-    var route = router.get(hash)
+    var route = router.route(hash)
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
@@ -219,7 +219,7 @@ describe('`_run`', function () {
       expect(this.path).toBe(hash)
     })
 
-    var route = router.get(hash)
+    var route = router.route(hash)
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
@@ -236,7 +236,7 @@ describe('`_run`', function () {
       expect(this.path).toBe(hash)
     })
 
-    var route = router.get(hash)
+    var route = router.route(hash)
     expect(route).toBeAn('object')
     var spy = expect.spyOn(route, 'enter')
 
@@ -253,7 +253,7 @@ describe('`_run`', function () {
       expect(this.path).toBe(hash)
     })
 
-    var route = router.get(hash)
+    var route = router.route(hash)
     expect(route).toBeAn('object')
 
     var spy = expect.spyOn(route, 'enter')
@@ -279,7 +279,7 @@ describe('`_run`', function () {
 
 })
 
-describe('get', function () {
+describe('route', function () {
   var routes = [
     {
       path: '#/recursos',
@@ -306,7 +306,7 @@ describe('get', function () {
   it('must find exact plain routes', function () {
     for (var i = 0; i < routes.length; i++) {
       var hash = routes[0].path
-      var result = router.get(hash)
+      var result = router.route(hash)
       expect(result).toBeAn('object')
       expect(result.path).toBe(hash)
     }

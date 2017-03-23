@@ -67,3 +67,5 @@ pids
 *.pid
 *.seed
 .lock-wscript
+
+~*

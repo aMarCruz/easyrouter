@@ -3,3 +3,4 @@ dist/**
 **/test/expect
 **/test/fixtures
 **.md
+~*

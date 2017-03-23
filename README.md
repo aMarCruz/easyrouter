@@ -1,4 +1,5 @@
 [![npm Version][npm-image]][npm-url]
+[![Size][size-image]][size-url]
 [![License][license-image]][license-url]
 
 # EasyRouter
@@ -11,6 +12,9 @@ Tiny, fast, easy, yet powerful hash router in JavaScript.
 * Parses query strings
 * Zero dependencies
 
+## Important Breaking Change
+
+In v0.2.0 the method `get` is renamed to `route`, this is to avoid issues with the ES6 native `get` feature.
 
 ## Install
 
@@ -21,15 +25,21 @@ npm install easyrouter --save
 bower install easyrouter --save
 ```
 
+for the browser
+
+```html
+<script src="https://unpkg.com/easyrouter/easyrouter.min.js"></script>
+```
+
 The folder `dist` has tree builds:
 
 Filename | Description
 -------- | -----------
 easyrouter.js | CommonJS build for node, browserify, brunch, webpack, etc.
-easyrouter.es.js | ES6 module for rollup or module capable blunder.
-easyrouter.umd.js | UMD build for browsers*
+easyrouter.es.js | ES6 module for rollup or other module capable blunder.
+easyrouter.umd.js | Generic UMD build
 
-\* easyrouter.umd.js via `<script>` stores the router instance in the global variable `window.router`.
+In the root is `easyrouter.min.js`, a minified IIFE version for browsers that stores the router instance in the global variable `window.router`.
 
 
 ## Example
@@ -140,12 +150,12 @@ router.rescue((hash) => {
 })
 ```
 
-### `get(rule)`
+### `route(rule)`
 
 Returns the route object assigned to the rule.
 
 ```js
-const route = router.get('#/resource/:id')
+const route = router.route('#/resource/:id')
 ```
 
 ### `match(hash)`
@@ -282,3 +292,5 @@ The [MIT License](LICENCE) (MIT)
 [npm-url]:        https://www.npmjs.com/package/easyrouter
 [license-image]:  https://img.shields.io/npm/l/express.svg
 [license-url]:    https://github.com/aMarCruz/easyrouter/blob/master/LICENSE
+[size-image]:     https://badges.herokuapp.com/size/npm/easyrouter/easyrouter.min.js
+[size-url]:       https://www.npmjs.com/package/easyrouter

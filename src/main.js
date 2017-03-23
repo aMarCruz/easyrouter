@@ -11,11 +11,11 @@ if (typeof window != 'object') window = {}
 if (!window.location) window.location = { hash: '' }
 //#endif */
 
-const easyRouter = (function _easyRouter (window, UNDEF) {
-  'use strict'
+const router = (function _easyRouter (window, UNDEF) {
 
   const location = window.location
-  const _decode = decodeURIComponent
+  const _decode  = window.decodeURIComponent
+
   const _noop = (s) => s
 
   const _routes = {}
@@ -159,15 +159,15 @@ const easyRouter = (function _easyRouter (window, UNDEF) {
       return this
     },
 
-    get (hash) {
+    route (hash) {
       const parts = _split(normalize(hash))
       let route = _routes
 
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i]
-        const parm = part[0] === ':' ? ':' : 0
 
-        route = route[parm || part]
+
+        route = route[part[0] === ':' ? ':' : part]
         if (!route) {
           return UNDEF
         }
@@ -295,7 +295,7 @@ const easyRouter = (function _easyRouter (window, UNDEF) {
 
   }
 
-  Object.defineProperty(_R, 'version', { values: '$_VERSION', enumerable: true })
+  // aliases
   _R.add = _R.concat
 
   //#if process.env.BUILD === 'test'
@@ -307,4 +307,4 @@ const easyRouter = (function _easyRouter (window, UNDEF) {
 
 })(window)
 
-export default easyRouter
+export default router
