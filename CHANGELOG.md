@@ -1,6 +1,11 @@
 # Changes for easyRouter
 
+### 2017-09-09 v0.3.0
+- Fix error for inexistent routes.
+- Parameter for `listen` if used as the fallback hash.
+
 ### 2017-03-22 v0.2.0
+- Better support for parameters in queryString.
 
 #### Important Breaking Change
 

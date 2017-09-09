@@ -48,8 +48,9 @@ In the root is `easyrouter.min.js`, a minified IIFE version for browsers that st
 // Require the router if using brunch, browserify, webpack, etc.
 const router = require('easyrouter')
 
+// params can be null if the new hash was not registered in the route map.
 function resourceEditor (params) {
-  if (params.id) {
+  if (params && params.id) {
     // edit existing resource
   } else {
     // edit a new resource
@@ -78,17 +79,20 @@ const routes = [
 
 // Use the `add` method to add all the routes
 router
-  .add(routes, (route) => {
+  .add(routes, route => {
     console.log(this.hash)
   })
-  .enter((route) => {
+  .enter(route => {
     // global callback called before run the route
+    console.log(`Entering ${route.hash}`)
   })
-  .exit((route) => {
+  .exit(route => {
     // global callback called after exit the route
+    console.log(`Leaving ${route.hash}`)
   })
-  .rescue((hash) => {
+  .rescue(hash => {
     // executed for non-existing routes, takes the normalized hash
+    location.href = '/errors/404.html'
   })
   // use #/ for users that arrives to this page without a hash
   .listen('#/')
@@ -142,6 +146,9 @@ router.exit(() => {
 ### `rescue(callback)`
 
 Set the global callback called when no rule matches the hash.
+
+If you do not provide a `rescue` method, the router will set a default one that will redirect it to the hash that you have given as a parameter to `listen`.
+
 
 ```js
 router.rescue((hash) => {

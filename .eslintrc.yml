@@ -44,7 +44,8 @@ rules:
   no-unexpected-multiline: 2    # Avoid code that looks like two expressions but is actually one
   valid-jsdoc:
     - 2
-    - prefer: { return: "returns" }
+    - prefer:
+        argument: "param"
       requireReturn: false
       requireReturnDescription: false
   #
@@ -168,7 +169,10 @@ rules:
   semi-spacing: 2                 # prevents the use of spaces before a semicolon in expressions
   semi: [2, "never"]              # require or disallow use of semicolons instead of ASI
   space-before-blocks: 2          # require a space before blocks
-  space-before-function-paren: 2  # require a space before function parenthesis
+  space-before-function-paren:    # require a space before function parenthesis
+    - 2
+    - anonymous: "always"
+      named: "never"
   space-in-parens: 2              # disallow spaces inside parentheses expect for '()'
   space-infix-ops:
     - 2

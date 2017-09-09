@@ -1,53 +1,65 @@
 'use strict';
 
 /**
- * Hash normalization, adds the first '#' and removes the last slash.
- *
- * @param   {String} hash - The hash to normalize
- * @returns {String} Normalized hash.
- */
-function normalize (hash) {
-
-  // if the hash is empty, this will output the '#' alone
-  if (hash[0] !== '#') {
-    hash = "#" + hash;
-  }
-
-  // only removing if length > 2 allows '#/'
-  return hash.length > 2 && hash.slice(-1) === '/'
-       ? hash.slice(0, -1) : hash
-}
-
-/**
- * easyRouter v0.2.0
+ * easyRouter v0.3.0
  * @author aMarCruz
  * @license MIT
  */
-var router = (function _easyRouter (window, UNDEF) {
+//import normalize from './normalize'
+
+
+var router = (function easyRouter(window, UNDEF) {
 
   var location = window.location;
   var _decode  = window.decodeURIComponent;
 
   var _noop = function (s) { return s; };
 
-  var _routes = {};
   var _active = {};
+  var _routes = {};
   var _rescue;
   var _enter;
   var _exit;
 
-  function _fn (fn) {
+  function _fn(fn) {
     return typeof fn == 'function' ? fn : UNDEF
   }
 
-  function _split (hash) {
+  /**
+   * Hash normalization, adds the first '#' and removes the last slash.
+   *
+   * @param   {String} hash - The hash to normalize
+   * @returns {String} Normalized hash.
+   * @private
+   */
+  function normalize(hash) {
+
+    // if the hash is empty, this will output the '#' alone
+    if (hash[0] !== '#') {
+      hash = "#" + hash;
+    }
+
+    // only removing if length > 2 (allows '#/' alone)
+    return hash.length > 2 && hash.slice(-1) === '/'
+        ? hash.slice(0, -1) : hash
+  }
+
+  /**
+   * Remove the first '#/' and trailing slashes from the given hash
+   * and returns it parts.
+   *
+   * @param   {string} hash - Hash to split
+   * @returns {string[]} Separate components of the hash
+   * @private
+   */
+  function _split(hash) {
     return hash
           .replace(/^#?\/*(.*)\/*$/, '$1')
           .toLowerCase()
           .split('/')
   }
 
-  function _seek (hash, esc) {
+  function _seek(hash, esc) {
     var parts  = _split(hash);
     var params = {};
     var route = _routes;
@@ -72,7 +84,7 @@ var router = (function _easyRouter (window, UNDEF) {
     return route
   }
 
-  function _query (ctx, url, esc) {
+  function _query(ctx, url, esc) {
     if (url && ctx) {
       var qs = url.split('&');
 
@@ -88,7 +100,7 @@ var router = (function _easyRouter (window, UNDEF) {
   /*
     Main method to define a new route.
    */
-  function _add (src, cb) {
+  function _add(src, cb) {
     var path = normalize(src.path);
     var route = _routes;
 
@@ -118,15 +130,15 @@ var router = (function _easyRouter (window, UNDEF) {
      *
      * @returns {object} This chainable object
      */
-    reset: function reset () {
+    reset: function reset() {
       this.clear();
       _active.hash  = '';
       _active.route = _rescue = _enter = _exit = UNDEF;
       return this
     },
 
-    clear: function clear () {
-      Object.keys(_routes).forEach(function (p) { delete _routes[p]; });
+    clear: function clear() {
+      _routes = {};
       return this
     },
 
@@ -137,7 +149,7 @@ var router = (function _easyRouter (window, UNDEF) {
      * @param   {Function} [cb] - Optional 'on' function
      * @returns {Object}   This chainable object
      */
-    concat: function concat (arr, cb) {
+    concat: function concat(arr, cb) {
       cb = _fn(cb);
 
       if (Array.isArray(arr)) {
@@ -156,28 +168,27 @@ var router = (function _easyRouter (window, UNDEF) {
      * @param {Function} cb - The function to exec for routes without one.
      * @returns {Object}      This chainable object
      */
-    rescue: function rescue (cb) {
+    rescue: function rescue(cb) {
       _rescue = _fn(cb);
       return this
     },
 
-    enter: function enter (cb) {
+    enter: function enter(cb) {
       _enter = _fn(cb);
       return this
     },
 
-    exit: function exit (cb) {
+    exit: function exit(cb) {
       _exit = _fn(cb);
       return this
     },
 
-    route: function route (hash) {
+    route: function route(hash) {
       var parts = _split(normalize(hash));
       var route = _routes;
 
       for (var i = 0; i < parts.length; i++) {
         var part = parts[i];
-
 
         route = route[part[0] === ':' ? ':' : part];
         if (!route) {
@@ -194,7 +205,7 @@ var router = (function _easyRouter (window, UNDEF) {
      * @param   {string} hash - normalized hash
      * @returns {object} `false` if href has not matching route
      */
-    match: function match (hash) {
+    match: function match(hash) {
       var aqs = hash.split('?');
       var esc = hash.indexOf('%') < 0 ? _noop : _decode;
 
@@ -207,7 +218,7 @@ var router = (function _easyRouter (window, UNDEF) {
      * @param   {string}  hash - The hash to run
      * @returns {boolean} success flag
      */
-    _run: function _run (hash) {
+    _run: function _run(hash) {
       hash = normalize(hash);
 
       if (_active.hash !== hash) {
@@ -235,10 +246,10 @@ var router = (function _easyRouter (window, UNDEF) {
           _enter.call(this, next);
         }
 
-        // now, if we have a new route, returns the result
-        // of its enter method
+        // if we have a new route with a `next` method, call it and return
         if (next && next.enter) {
-          return next.enter(next.params)
+          next.enter(next.params);
+          return true
         }
 
         // no route, fallback to rescue
@@ -258,7 +269,7 @@ var router = (function _easyRouter (window, UNDEF) {
      * @param   {Boolean} [force] - `true` to always run the callback
      * @returns {Object}  This chainable object
      */
-    navigate: function navigate (hash, force) {
+    navigate: function navigate(hash, force) {
       if (force) {
         _active.hash = '@';
       }
@@ -270,10 +281,14 @@ var router = (function _easyRouter (window, UNDEF) {
       return this
     },
 
+    get _routes() {
+      return _routes
+    },
+
     /**
      * Default handler for hash changes
      */
-    _handler: function _handler () {
+    _handler: function _handler() {
       _R._run(location.hash);
     },
 
@@ -286,20 +301,32 @@ var router = (function _easyRouter (window, UNDEF) {
      * @param   {string} [root] - The hash used as root
      * @returns {object} This chainable object
      */
-    listen: function listen (root) {
+    listen: function listen(root) {
 
-      if (!location.hash && root) {
-        location.hash = normalize(root);
-      }
-
+      // check browser haschange support
       if ('onhashchange' in window) {
         window.addEventListener('hashchange', _R._handler, true);
       } else {
         throw new Error('easyRouter: Your browser has no hashchange support')
       }
 
+      // normalize root
+      if (root) {
+        root = normalize(root);
+
+        // set a default rescue funtion if there's no one
+        if (!_rescue) {
+          _rescue = function () { location.hash = root; };
+        }
+      }
+
+      // if we have a hash, run it
       if (location.hash) {
         this._run(location.hash);
+
+      // else if we have a root, set it (it will run automatically)
+      } else if (root) {
+        location.hash = root;
       }
 
       return this

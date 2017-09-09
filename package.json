@@ -1,6 +1,6 @@
 {
   "name": "easyrouter",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Tiny, fast, easy, yet powerful hash router in JavaScript",
   "main": "dist/easyrouter.js",
   "module": "dist/easyrouter.es.js",
@@ -19,7 +19,6 @@
     "build:es6": "rollup -c -f es -o dist/easyrouter.es.js",
     "build:umd": "rollup -c -f umd -n router -o dist/easyrouter.umd.js",
     "prepublish": "npm run lint && npm test && npm run build",
-    "premin": "rollup -c -f iife -n router -o ~router.js",
     "min": "uglifyjs ./dist/easyrouter.umd.js -m -c -o ./easyrouter.min.js"
   },
   "files": [
