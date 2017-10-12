@@ -9,10 +9,32 @@ Tiny, fast, easy, yet powerful hash router in JavaScript.
 * About 2K minified, 1K gzipped
 * No performance drop as you add routes
 * Order of route declaration doesn't matter: the most specific route wins
-* Parses query strings
+* Parses query strings (See NOTE)
 * Zero dependencies
 
-## Important Breaking Change
+## NOTE
+
+For easyRoute to recognize query-strings, the query-string must follow the hash.
+This is non-standard and assigning through the `href` **property** does not work, you must use literal anchors or `setAttribute`.
+
+Example:
+
+```js
+const anchor = document.createElement('a')
+anchor.setAttribute(`#/customers/1?order=${orderNo}`)
+```
+
+This restriction will be removed in a future version.
+
+## New in v0.1.0
+
+`query` method of routes, runs for query-string changes with a same hash.
+
+Please wait for demos soon.
+
+## Important Breaking Changes
+
+In v1.0.0 the object passed as the context for methods is a shallow copy of the original route.
 
 In v0.2.0 the method `get` is renamed to `route`, this is to avoid issues with the ES6 native `get` feature.
 
@@ -219,6 +241,7 @@ A route is un plain object with the following propertites:
 {
   path: '#/',                 // String with the rule
   enter: (params) => {},      // Called when the hash changes
+  query: (params) => {},      // Called when the query-string changes for a same hash
   exit: () => {}              // Called before call the new route callback
   hash: '#/',                 // Matched hash (normalized)
   params: {}                  // Extracted parameters

@@ -1,5 +1,11 @@
+/*
+  EasyRouter v1.0.0
+
+----------------------------------------------------------------*/
+/* eslint-disable */
+
 /**
- * easyRouter v0.3.0
+ * easyRouter v1.0.0
  * @author aMarCruz
  * @license MIT
  */

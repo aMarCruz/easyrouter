@@ -1,3 +1,9 @@
+/*
+  EasyRouter v1.0.0
+
+----------------------------------------------------------------*/
+/* eslint-disable */
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -5,7 +11,7 @@
 }(this, (function () { 'use strict';
 
 /**
- * easyRouter v0.3.0
+ * easyRouter v1.0.0
  * @author aMarCruz
  * @license MIT
  */

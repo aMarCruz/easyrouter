@@ -1,10 +1,3 @@
-/**
- * easyRouter v$_VERSION
- * @author aMarCruz
- * @license MIT
- */
-//import normalize from './normalize'
-
 /*#if process.env.BUILD === 'test'
 var window
 if (typeof window != 'object') window = {}
@@ -48,6 +41,23 @@ const router = (function easyRouter(window, UNDEF) {
   }
 
   /**
+   * Makes a shallow copy of `src`.
+   * Returns `null` if `src` is falsy.
+   *
+   * @param   {Object|null} src - Source object
+   * @returns {Object|null} New object with the properties of `src`.
+   */
+  function _dup(src) {
+    if (!src) {
+      return null
+    }
+
+    const dest = Object.create(null)
+    Object.keys(src).forEach(function (prop) { this[prop] = src[prop] }, dest)
+    return dest
+  }
+
+  /**
    * Remove the first '#/' and trailing slashes from the given hash
    * and returns it parts.
    *
@@ -62,13 +72,40 @@ const router = (function easyRouter(window, UNDEF) {
           .split('/')
   }
 
-  function _seek(hash, esc) {
+  /**
+   * Determinate if two route paths have the same params.
+   *
+   * @param  {Object} a - Route
+   * @param  {Object} b - Route
+   * @return {boolean}
+   */
+  function _equ(a, b) {
+    const parms = a.path.split('/').filter(p => p[0] === ':')
+
+    for (let i = 0; i < parms.length; i++) {
+      const p = parms[i].substr(1)
+
+      if (a.params[p] !== b.params[p]) {
+        return false
+      }
+    }
+    return true
+  }
+
+  /**
+   * Find the route which the given hash belongs to.
+   *
+   * @param   {string} hash     - Already normalized hash
+   * @param   {Function} unesc  - Decoding function
+   * @returns {Object}
+   */
+  function _seek(hash, unesc) {
     const parts  = _split(hash)
     const params = {}
     let route = _routes
 
     for (let i = 0; i < parts.length; i++) {
-      const part = esc(parts[i])
+      const part = unesc(parts[i])
       const name = part in route ? part : ':' in route ? ':' : '*'
 
       route = route[name]
@@ -83,21 +120,30 @@ const router = (function easyRouter(window, UNDEF) {
       }
     }
 
-    (route = route['@']).params = params
+    route = _dup(route['@'])
+    route.params = params
     return route
   }
 
-  function _query(ctx, url, esc) {
-    if (url && ctx) {
-      const qs = url.split('&')
+  /**
+   * Parses the queryString part.
+   *
+   * @param {Object} route    - Route object
+   * @param {string} queryStr - Query string
+   * @param {string} unesc    - Decoding function
+   * @returns {Object} The route
+   */
+  function _query(route, queryStr, unesc) {
+    if (queryStr && route) {
+      const qs = queryStr.split('&')
 
       for (let i = 0; i < qs.length; i++) {
         const pair = qs[i].split('=')
 
-        ctx.params[pair[0]] = esc(pair[1])
+        route.params[pair[0]] = unesc(pair[1])
       }
     }
-    return ctx
+    return route
   }
 
   /*
@@ -209,14 +255,14 @@ const router = (function easyRouter(window, UNDEF) {
      * @returns {object} `false` if href has not matching route
      */
     match(hash) {
-      const aqs = hash.split('?')
-      const esc = hash.indexOf('%') < 0 ? _noop : _decode
+      const parts = hash.split('?')
+      const unesc = hash.indexOf('%') < 0 ? _noop : _decode
 
-      return _query(_seek(aqs[0], esc), aqs[1], esc)
+      return _query(_seek(parts[0], unesc), parts[1], unesc)
     },
 
     /**
-     * Trigger on hash changes
+     * Trigged on hash changes.
      *
      * @param   {string}  hash - The hash to run
      * @returns {boolean} success flag
@@ -227,6 +273,22 @@ const router = (function easyRouter(window, UNDEF) {
       if (_active.hash !== hash) {
         const prev = _active.route
         const next = this.match(hash)
+
+        // Hook for query-string only changes through the `query` method of
+        // the route.
+        if (next) {
+          next.hash = hash
+
+          // run the query function if any, and only if we have the same
+          // params for the non-queryStr parts (route already loaded)
+          if (next.query && prev && prev.path === next.path && _equ(prev, next)) {
+            if (next.query.call(this, next.params) === false) {
+              _active.hash  = hash
+              _active.route = next
+              return false
+            }
+          }
+        }
 
         // if we have a previous route, call its `exit`
         // method and abort if `exit` returns `false`
@@ -240,7 +302,6 @@ const router = (function easyRouter(window, UNDEF) {
         }
 
         // swap the current route info
-        if (next) next.hash = hash
         _active.hash  = hash
         _active.route = next
 

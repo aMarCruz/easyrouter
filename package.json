@@ -1,29 +1,27 @@
 {
   "name": "easyrouter",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Tiny, fast, easy, yet powerful hash router in JavaScript",
   "main": "dist/easyrouter.js",
   "module": "dist/easyrouter.es.js",
   "jsnext:main": "dist/easyrouter.es.js",
   "browser": "dist/easyrouter.umd.js",
   "engines": {
-    "node": ">=4.0"
+    "node": ">=4.2"
   },
   "scripts": {
     "lint": "eslint src",
     "pretest": "rollup --environment BUILD:test -c -m -f cjs -o dist/easyrouter.js",
     "test": "mocha",
     "prebuild": "rm -rf dist/*",
-    "build": "npm run build:cjs && npm run build:es6 && npm run build:umd && npm run min",
-    "build:cjs": "rollup -c -f cjs -o dist/easyrouter.js",
-    "build:es6": "rollup -c -f es -o dist/easyrouter.es.js",
-    "build:umd": "rollup -c -f umd -n router -o dist/easyrouter.umd.js",
+    "build": "rollup -c && npm run min",
     "prepublish": "npm run lint && npm test && npm run build",
     "min": "uglifyjs ./dist/easyrouter.umd.js -m -c -o ./easyrouter.min.js"
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "easyrouter.min.js"
   ],
   "repository": {
     "type": "git",
@@ -51,7 +49,7 @@
     "eslint": "^3.x",
     "expect": "*",
     "mocha": "*",
-    "rollup": "*",
+    "rollup": "^0.50.0",
     "rollup-plugin-buble": "*",
     "rollup-plugin-jscc": "*",
     "uglify-js": "^2.x"

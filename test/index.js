@@ -162,7 +162,11 @@ describe('`_run`', function () {
     var result = router._run(hash)
     expect(result).toNotBe(false)
     expect(spy).toHaveBeenCalled()
-    expect(spy.calls[0].context).toBe(route)
+
+    var ctx = spy.calls[0].context
+    expect(typeof ctx).toBe('object')
+    expect(ctx.path).toBe(route.path)
+    expect(ctx.title).toBe(route.title)
   })
 
   it('must call action once for the same rule', function () {

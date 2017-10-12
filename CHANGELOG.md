@@ -1,5 +1,11 @@
 # Changes for easyRouter
 
+### 2017-10-12 v1.0.0 - Breaking changes
+- Updated README.md
+- New `query` method for routes, runs only for querystring changes (See README).
+- The route passed to methods is a shallow copy of the original route.
+- Update rollup to v0.50.x
+
 ### 2017-09-09 v0.3.0
 - Fix error for inexistent routes.
 - Parameter for `listen` if used as the fallback hash.
