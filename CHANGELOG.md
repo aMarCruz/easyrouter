@@ -5,6 +5,7 @@
 ### Changes
 
 - Update devDependencies and ESLint rules.
+- Lock version of expect in devDependencies.
 - New Changelog format.
 
 ## \[1.0.0] - 2017-10-12

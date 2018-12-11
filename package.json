@@ -47,8 +47,8 @@
   "devDependencies": {
     "buble": "*",
     "eslint": "^5.10.0",
-    "expect": "*",
-    "mocha": "*",
+    "expect": "1.20.2",
+    "mocha": "^5.2.0",
     "rollup": "^0.67.0",
     "rollup-plugin-buble": "*",
     "rollup-plugin-jscc": "*",
