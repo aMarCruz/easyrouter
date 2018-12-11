@@ -46,12 +46,12 @@
   },
   "devDependencies": {
     "buble": "*",
-    "eslint": "^3.x",
+    "eslint": "^5.10.0",
     "expect": "*",
     "mocha": "*",
-    "rollup": "^0.50.0",
+    "rollup": "^0.67.0",
     "rollup-plugin-buble": "*",
     "rollup-plugin-jscc": "*",
-    "uglify-js": "^2.x"
+    "uglify-js": "^3.4.0"
   }
 }
