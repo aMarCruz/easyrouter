@@ -1,0 +1,25 @@
+language: node_js
+
+node_js:
+    - "6.14.0"
+
+branches:
+    only:
+        - master
+        - dev
+
+git:
+    depth: 3
+    quiet: true
+
+before_script:
+    - make setup_cover
+
+script:
+    - yarn test
+
+after_script:
+    - make send_cover
+
+notifications:
+    email: false

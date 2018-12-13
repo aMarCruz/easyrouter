@@ -7,6 +7,7 @@
 - Global callbacks `onEnter` and `onExit`.
 - TypeScript v3 typings.
 - Test for 100% coverage.
+- Travis and codecov tests.
 - Browser test with karma (local).
 - Method `getContext` to retrieve the router context.
 
