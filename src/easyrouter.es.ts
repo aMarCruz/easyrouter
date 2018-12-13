@@ -413,8 +413,95 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
     },
 
     /**
-     * Set the global callback called when no rule matches the hash or the
-     * route has no an `enter` method.
+     * Returns an object with the route for a matching hash.
+     *
+     * The route includes the parameters given in the hash.
+     *
+     * @param   {string} hash hash to match
+     * @returns {RouteContext|null} `null` if href has not matching route.
+     */
+    match(hash: string) {
+      const unesc = hash.indexOf('%') < 0 ? _noop : _decode
+      const start = hash.indexOf('?')
+      const query = start < 0 ? '' : hash.substr(start + 1)
+      const path  = start < 0 ? hash : hash.substr(0, start)
+
+      return query
+        ? _query(_seek(path, hash, unesc), query, unesc)
+        : _seek(path, hash, unesc)
+    },
+
+    /**
+     * Goes to the given hash.
+     *
+     * If `force` is `true`, the callback runs even if the hash is current.
+     *
+     * @param   {string}  hash The target hash
+     * @param   {Boolean} [force] `true` to always run the callback
+     * @returns {this} This chainable object.
+     */
+    navigate(hash: string, force?: boolean) {
+
+      if (force) {
+        _hash = '@'
+      }
+
+      if (force && _normalize(location.hash) === _normalize(hash)) {
+        _run(hash)
+      } else {
+        location.hash = hash
+      }
+
+      return R
+    },
+
+    /**
+     * Set the global callback called _always_ that the hash changes, after
+     * the `route.query`, `route.exit` and `router.onExit` methods.
+     *
+     * The parameter received by the callback is an object with the next route
+     * data, and the default context (`this`) is the router itself.
+     *
+     * _NOTE:_
+     *
+     * This callback will be called even if there's no match for the next hash
+     * or the new location has no hash. In this cases the parameter passed to
+     * the callback will be `null`.
+     *
+     * In the last case it will be called once, when the hash is removed.
+     *
+     * @param {Function} cb Enter callback.
+     * @returns {this} This chainable object.
+     */
+    onEnter(cb: Router.OnEnterFn) {
+      _onEnter = _fn(cb)
+      return R
+    },
+
+    /**
+     * Set the global callback called when the hash changes, before the
+     * `route.enter`, `router.onEnter` and `router.rescue` methods.
+     *
+     * The parameter received by the callback is an object with the previous
+     * route data, and the default context (`this`) is the router itself.
+     *
+     * _NOTE:_
+     *
+     * This callback will be called even if there's no match for the previous
+     * hash or the previous location has no hash. In this cases the
+     * parameter passed to the callback will be `null`.
+     *
+     * @param {Function} cb Callback
+     * @returns {this} This chainable object.
+     */
+    onExit(cb: Router.OnExitFn) {
+      _onExit = _fn(cb)
+      return R
+    },
+
+    /**
+     * Set the global callback called with the current hash when no rule
+     * matches the hash or the route has no an `enter` method.
      *
      * If you do not provide a `rescue` method, the router will set one to
      * redirect your users to the "root" defined by the `listen` method.
@@ -465,91 +552,6 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
       }
 
       return route && route[S_ROUTE_NODE] as Route || NULL
-    },
-
-    /**
-     * Returns a Route object for a given hash.
-     *
-     * @param   {string} hash normalized hash
-     * @returns {RouteContext|null} `null` if href has not matching route.
-     */
-    match(hash: string) {
-      const unesc = hash.indexOf('%') < 0 ? _noop : _decode
-      const start = hash.indexOf('?')
-      const query = start < 0 ? '' : hash.substr(start + 1)
-      const path  = start < 0 ? hash : hash.substr(0, start)
-
-      return query
-        ? _query(_seek(path, hash, unesc), query, unesc)
-        : _seek(path, hash, unesc)
-    },
-
-    /**
-     * Go to the given hash.
-     *
-     * If force is true, the callback runs even if the hash is current.
-     *
-     * @param   {string}  hash The target hash
-     * @param   {Boolean} [force] `true` to always run the callback
-     * @returns {this} This chainable object.
-     */
-    navigate(hash: string, force?: boolean) {
-
-      if (force) {
-        _hash = '@'
-      }
-
-      if (force && _normalize(location.hash) === _normalize(hash)) {
-        _run(hash)
-      } else {
-        location.href = hash
-      }
-
-      return R
-    },
-
-    /**
-     * Set the global callback called _always_ that the hash changes, after
-     * the `route.query`, `route.exit` and `router.onExit` methods.
-     *
-     * The parameter received by the callback is an object with the next route
-     * data, and the default context (`this`) is the router itself.
-     *
-     * _NOTE:_
-     *
-     * This callback will be called even if there's no match for the next hash
-     * or the new location has no hash. In this cases the parameter passed to
-     * the callback will be `null`.
-     *
-     * In the last case it will be called once, when the hash is removed.
-     *
-     * @param {Function} cb Enter callback.
-     * @returns {this} This chainable object.
-     */
-    onEnter(cb: Router.OnEnterFn) {
-      _onEnter = _fn(cb)
-      return R
-    },
-
-    /**
-     * Set the global callback called when the hash changes, before the
-     * `route.enter`, `router.onEnter` and `router.rescue` methods.
-     *
-     * The parameter received by the callback is an object with the previous
-     * route data, and the default context (`this`) is the router itself.
-     *
-     * _NOTE:_
-     *
-     * This callback will be called even if there's no match for the previous
-     * hash or the previous location has no hash. In this cases the
-     * parameter passed to the callback will be `null`.
-     *
-     * @param {Function} cb Callback
-     * @returns {this} This chainable object.
-     */
-    onExit(cb: Router.OnExitFn) {
-      _onExit = _fn(cb)
-      return R
     },
 
     /**

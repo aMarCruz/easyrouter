@@ -1,53 +1,58 @@
+# EasyRouter
+
 [![npm Version][npm-image]][npm-url]
 [![Size][size-image]][size-url]
 [![License][license-image]][license-url]
 
-# EasyRouter
-
 Tiny, fast, easy, yet powerful hash router in JavaScript.
 
-* About 3K minified, 1K gzipped
-* No performance drop as you add routes
-* Order of route declaration doesn't matter: the most specific route wins
-* Parses query strings (See NOTE)
-* Zero dependencies
+- About 3K minified, 1K gzipped
+- No performance drop as you add routes
+- Order of route declaration doesn't matter: the most specific route wins
+- Parses query strings (See NOTE)
+- TypeScript v3 definitions
+- Zero dependencies
 
 ## NOTE
 
-For easyRoute to recognize query-strings, the query-string must follow the hash.
-This is non-standard and assigning through the `href` **property** does not work, you must use literal anchors or `setAttribute`.
+For easyRoute to recognize query strings, this must follow the hash (be part of it).
+This is not standard the assignment through the `href` **property** does not work, you must use literal anchors or `setAttribute`.
 
 Example:
 
 ```js
+location.hash = `#/customers/1?order=${orderNo}`
+
+// or...
 const anchor = document.createElement('a')
 anchor.setAttribute(`#/customers/1?order=${orderNo}`)
 ```
 
-This restriction will be removed in a future version.
+It is not likely that this restriction can change.
 
-## New in v0.1.0
+## Changes in v1.0.0
 
-`query` method of routes, runs for query-string changes with a same hash.
+The most important change is the renaming of the methods `enter` and `exit` of the router, which are now `onEnter` and `onExit`, and the removal of the alias `concat`.
 
-Please wait for demos soon.
-
-## Important Breaking Changes
-
-In v1.0.0 the object passed as the context for methods is a shallow copy of the original route.
-
-In v0.2.0 the method `get` is renamed to `route`, this is to avoid issues with the ES6 native `get` feature.
+Please see the [Changelog](CHANGELOG.md) for more information.
 
 ## Install
 
-npm or bower
+npm
 
 ```bash
 npm install easyrouter --save
+# or
+yarn add easyrouter
+```
+
+Bower
+
+```bash
 bower install easyrouter --save
 ```
 
-for the browser
+In the browser
 
 ```html
 <script src="https://unpkg.com/easyrouter/easyrouter.min.js"></script>
@@ -55,14 +60,13 @@ for the browser
 
 The folder `dist` has tree builds:
 
-Filename | Description
--------- | -----------
-easyrouter.js | CommonJS build for node, browserify, brunch, webpack, etc.
-easyrouter.es.js | ES6 module for rollup or other module capable blunder.
+Filename          | Description
+----------------- | -----------
+easyrouter.js     | CommonJS build for node, browserify, brunch, webpack, etc.
+easyrouter.es.js  | ESM build for rollup or other module capable blunders.
 easyrouter.umd.js | Generic UMD build
 
-In the root is `easyrouter.min.js`, a minified IIFE version for browsers that stores the router instance in the global variable `window.router`.
-
+In the root is `easyrouter.min.js`, a minified UMD version for browsers that stores the router instance in the global variable `window.router`.
 
 ## Example
 
@@ -70,9 +74,13 @@ In the root is `easyrouter.min.js`, a minified IIFE version for browsers that st
 // Require the router if using brunch, browserify, webpack, etc.
 const router = require('easyrouter')
 
+function login () {
+  // display login
+}
+
 // params can be null if the new hash was not registered in the route map.
 function resourceEditor (params) {
-  if (params && params.id) {
+  if (params.id) {
     // edit existing resource
   } else {
     // edit a new resource
@@ -96,140 +104,144 @@ const routes = [
   }, {
     path: '#/resource/ext/*',
     title: 'Other resource'
+  }, {
+    path: '#/login',
+    enter: login
   }
+
 ]
 
-// Use the `add` method to add all the routes
+// Use the `add` method to add all the routes.
+// Its additional parameter is the default `enter` method for each route.
 router
-  .add(routes, route => {
+  .add(routes, (params) => {
+    // default enter method executed in the context of the current route.
+    // the params are the parameter values given by the current hash.
     console.log(this.hash)
   })
-  .enter(route => {
-    // global callback called before run the route
-    console.log(`Entering ${route.hash}`)
-  })
-  .exit(route => {
-    // global callback called after exit the route
+  .onExit((route) => {
+    // global callback called on exit a previous route
     console.log(`Leaving ${route.hash}`)
   })
-  .rescue(hash => {
-    // executed for non-existing routes, takes the normalized hash
-    location.href = '/errors/404.html'
+  .onEnter((route) => {
+    // global callback called before run the current route
+    console.log(`Entering ${route.hash}`)
   })
-  // use #/ for users that arrives to this page without a hash
-  .listen('#/')
+  .rescue((hash) => {
+    // executed for non-existing routes or routes without `enter` method
+    location.href = 'errors/404.html'
+  })
+  // start the router using "#/login" for users that arrives to this
+  // page without a hash
+  .listen('#login')
 ```
 
 ## API
 
 ### `add(routes [, callback])`
 
-Defines one or more routes.
+Registers one or more routes.
 
-`routes` can be an object or array of objects, their property `path` specifies the rule.
+The received objects are used as a template to generate the routes.
 
-`callback` is an optional default `enter` method for each route (particular `enter` ovewrite it).
+Parameter | Description
+--------- | -----------
+routes    | Can be an object or array of objects, their property `path` specifies the rule.
+callback  | Optional `enter` method for routes without one.
 
-```js
-router.add(routesArray)
-```
-
-alias: `concat`
+_Note:_ The alias `concat` was removed in v1.0
 
 ### `clear()`
 
 Empties the routes.
 
-```js
-router.clear()
-// now the 'rescue' method, if any, will run on each hash change
-```
+The global callbacks (onEnter, onExit, rescue) are preserved.
 
-### `enter(callback)`
+### getContext
 
-Set the global callback called when the hash changes.
+Returns the context of the router.
+It includes the last saved route or `null` if there's no such route (like after a `reset`).
 
-```js
-router.enter(() => {
-  $('#main-page>.content').stop(true, true).fadeIn()
-})
-```
+The content returned object:
 
-### `exit(callback)`
-
-Set the global callback called when leaving the current hash.
-
-```js
-router.exit(() => {
-  $('#main-page>.content').fadeOut(() => { $(this).empty() })
-})
-```
-
-### `rescue(callback)`
-
-Set the global callback called when no rule matches the hash.
-
-If you do not provide a `rescue` method, the router will set a default one that will redirect it to the hash that you have given as a parameter to `listen`.
-
-
-```js
-router.rescue((hash) => {
-  const view = require('./views/page404.hbs')
-  $('#main-page>.content').html(view({ hash }))
-})
-```
-
-### `route(rule)`
-
-Returns the route object assigned to the rule.
-
-```js
-const route = router.route('#/resource/:id')
-```
-
-### `match(hash)`
-
-Returns an object with `{ ruote, params }` for a matching route.
-
-```js
-const match = router.match(previousHash)
-match.route.enter(match.params)
-```
-
-### `navigate(hash [, force])`
-
-Go to the given hash.
-
-If `force` is `true`, the callback runs even if the hash is current.
-
-```js
-App.errorRecovery = () => {
-  router.navigate('#/')
-  //...
-}
-```
+Property  | Type     | Description
+--------- | -------- | -----------
+isActive  | boolean  | Is the router handling hash changes?
+lastHash  | string   | Last handled hash.
+lastRoute | Object   | Last handled route, including hash and parameters.
+onEnter   | Function | Global callback registered by the `onEnter` method.
+onExit    | Function | Global callback registered by the `onExit` method.
+rescue    | Function | Fallback function registered by the `rescue` method.
 
 ### `listen(root)`
 
-Start handling routes.
+Start handling hash changes.
 
-`root` is the default hash for URLs with no hash.
+`root` is the hash for URLs without a defined path to which a user will be redirected.
 
-```js
-router.listen('#/login')
-```
+This route will be automatically selected in the page load, unless the page already has a hash.
+
+### `match(hash)`
+
+Returns an object with the route for a matching hash.
+
+The route includes the parameters given in the hash.
+
+### `navigate(hash [, force])`
+
+Goes to the given `hash`.
+
+If `force` is `true`, the callback runs even if the hash is current.
+
+### `onEnter(callback)`
+
+Set the global callback called _always_ that the hash changes, after the `route.query`, `route.exit` and `router.onExit` methods.
+
+The parameter received by the callback is an object with the next route data, and the default context (`this`) is the router itself.
+
+_NOTE:_
+
+This callback will be called even if there's no match for the next hash or the new location has no hash. In this cases the parameter passed to the callback will be `null`. In the last case it will be called once, when the hash is removed.
+
+### `onExit(callback)`
+
+Set the global callback called when the hash changes, before the `route.enter`, `router.onEnter` and `router.rescue` methods.
+
+The parameter received by the callback is an object with the previous route data, and the default context (`this`) is the router itself.
+
+_NOTE:_
+
+This callback will be called even if there's no match for the previous hash or the previous location has no hash. In this cases the parameter passed to the callback will be `null`.
+
+### `rescue(callback)`
+
+Set the global callback called with the current hash when no rule matches the hash or the route has no an `enter` method.
+
+If you do not provide a `rescue` method, the router will set one to redirect your users to the "root" defined by the `listen` method.
+
+This lets you provide instant user feedback if they click an undefined route.
 
 ### `reset()`
 
-Stop the router and clear its internal state.
+Clears the routes and global callbacks, without stopping the router.
 
-```js
-App.onChangeModule((module) => {
-  router.reset()
-  // now the router singleton is like a new guy
-  //...
-})
-```
+Generally, this method will be followed by `stop` or by a re-initialization.
+
+### `route(rule)`
+
+Returns the route object assigned to the given `rule`.
+
+The parameter is the rule used to register a route, it is not the hash of the current location.
+
+The returned object does not includes the hash nor parameters values.
+
+### `stop()`
+
+Stops the router.
+
+Any routes or global callbacks are preserved.
+
+You will need to call `listen` to re-enable the router.
 
 ---
 
@@ -237,24 +249,18 @@ App.onChangeModule((module) => {
 
 A route is un plain object with the following propertites:
 
-```js
-{
-  path: '#/',                 // String with the rule
-  enter: (params) => {},      // Called when the hash changes
-  query: (params) => {},      // Called when the query-string changes for a same hash
-  exit: () => {}              // Called before call the new route callback
-  hash: '#/',                 // Matched hash (normalized)
-  params: {}                  // Extracted parameters
-  //, other properties
-}
-```
+Property | Type     | Description
+-------- | -------- | -----------
+path     | string   | Rule with the path and parameter markers
+query    | function | Called only when the query-string changes _for a **same hash_**
+exit     | function | Called before call the `enter` and `onEnter` methods
+enter    | function | Called when the hash changes, with the parameters of the current hash
+hash     | string   | Matched hash (normalized)
+params   | object   | Object with the parameter names and values extracted from the hash.<br>**Note:** All the parameter values are strings.
 
-When passing route templates to the `add` method of the router, you can omit anything except `path`.
+When passing route templates to the router `add` method, you can omit anything except `path`.
 
-Additional properties are copied to the route, so can be accessed through `this` inside the `enter` and `exit` methods.
-
-Each time that the route is matched, its `hash` and `params` properties are updated.
-
+Any custom properties are copied to the route, so it can be accessed through `this` within the `query`, `enter` and `exit` methods of the route.
 
 ## Event Pipeline
 
@@ -264,12 +270,17 @@ This is the order of event when on hash changes:
               efective hash change
                        |
                        v
-           (if there's an old route)
-                oldRoute.exit()
-           (abort if returns `false`)
+      (if only the query-string was changed)
+            oldRoute.query(newParams)
+(abort and back to previous hash if it returns `false`)
                        |
                        v
-             router.exit(oldRoute)
+           (if there's an old route)
+            oldRoute.exit(oldParams)
+  (abort without go back, if it returns `false`)
+                       |
+                       v
+             router.onExit(oldRoute)
   (called with undefined if there's no old route)
                        |
                        v
@@ -277,10 +288,10 @@ This is the order of event when on hash changes:
     again this hash will no repeat the process)
                        |
                        v
-            router.enter(newRoute)
+            router.onEnter(newRoute)
                        |
                        v
-        there's a match for the new hash?
+ there's a match with an `enter` method for the hash?
                        |
           +------------+-------------+
           |                          |
@@ -289,14 +300,13 @@ This is the order of event when on hash changes:
 newRoute.enter(params)       router.rescue(hash)
 ```
 
-Note that all this work is done after the hash is set in the browser addressbar,
-so returning `false` from `oldRoute.exit` does not reset this.
+All this work is done after the hash is set in the browser addressbar, so returning `false` from the `exit` method does not reset this, but in the case of `query` the router will emit `navigate(prevRoute.hash)` to restore the previous route.
 
-Also, particular `enter` and `exit` methods are called with the route as context (`this` points to the route),
-and the route has two additional properties: `hash`, a string with the value of the matched location.hash (normalized)
-and `params`, an object that holds the extracted parameters (with all values as strings).
+Also, the `query` and `exit` methods are called with the old route as context (`this`), and the `enter` method with the new one.
 
-This is an example showing an async modal dialog if form has changes:
+These routes have two additional properties: `hash`, a string with the normalized value of the matched hash, and `params`, an object that contains the parameters extracted from the hash, with string values.
+
+This is an example showing an async modal dialog if a leaving form has changes:
 
 ```js
 function oldRouteExit () {
@@ -307,12 +317,23 @@ function oldRouteExit () {
           router.navigate(location.hash)
         }
       })
-    location.hash = this.hash
+    router.navigate(this.hash) // not required if used in `query`.
     return false
   }
 }
 ```
 
+## Support my Work
+
+I'm a full-stack developer with more than 20 year of experience and I try to share most of my work for free and help others, but this takes a significant amount of time and effort so, if you like my work, please consider...
+
+<!-- markdownlint-disable MD033 -->
+[<img src="https://amarcruz.github.io/images/kofi_blue.png" height="36" title="Support Me on Ko-fi" />][kofi-url]
+<!-- markdownlint-enable MD033 -->
+
+Of course, feedback, PRs, and stars are also welcome 🙃
+
+Thanks for your support!
 
 ## License
 
@@ -324,3 +345,4 @@ The [MIT License](LICENCE) (MIT)
 [license-url]:    https://github.com/aMarCruz/easyrouter/blob/master/LICENSE
 [size-image]:     https://badges.herokuapp.com/size/npm/easyrouter/easyrouter.min.js
 [size-url]:       https://www.npmjs.com/package/easyrouter
+[kofi-url]:       https://ko-fi.com/C0C7LF7I

@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Update Readme, include ko-fi link.
 - Update devDependencies and ESLint rules.
 - Lock version of expect in devDependencies.
 - New Changelog format.

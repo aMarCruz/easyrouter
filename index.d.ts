@@ -153,7 +153,7 @@ declare namespace Router {
 
   interface Router {
     /**
-     * Register one or more routes.
+     * Registers one or more routes.
      *
      * The received objects are used as a template to generate the routes.
      * The rule is extracted from its 'path' property.
@@ -190,7 +190,27 @@ declare namespace Router {
     listen(root?: string): this
 
     /**
-     * Set the global callback called when no rule matches the hash.
+     * Returns an object with the route for a matching hash.
+     *
+     * The route includes the parameters given in the hash.
+     *
+     * @param hash
+     */
+    match(hash: string): RouteContext | null
+
+    /**
+     * Goes to the given hash.
+     *
+     * If `force` is `true`, the callback runs even if the hash is current.
+     *
+     * @param hash Hash to set
+     * @param force Execute the callback unconditionally?
+     */
+    navigate(hash: string, force?: boolean): this
+
+    /**
+     * Set the global callback called with the current hash when no rule
+     * matches the hash or the route has no an `enter` method.
      *
      * If you do not provide a `rescue` method, the router will set one to
      * redirect your users to the "root" defined by the `listen` method.
@@ -220,23 +240,6 @@ declare namespace Router {
      * @param rule Rule to match in route `path` property.
      */
     route(rule: string): Route | null
-
-    /**
-     * Returns an object with the route for a matching hash.
-     *
-     * @param hash
-     */
-    match(hash: string): RouteContext | null
-
-    /**
-     * Go to the given hash.
-     *
-     * If force is true, the callback runs even if the hash is current.
-     *
-     * @param hash Hash to set
-     * @param force Execute the callback unconditionally?
-     */
-    navigate(hash: string, force?: boolean): this
 
     /**
      * Set the global callback called _always_ that the hash changes, after
