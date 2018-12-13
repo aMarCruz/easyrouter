@@ -35,7 +35,7 @@ module.exports = {
     'block-scoped-var': ON,
     'block-spacing': ERROR,
     'brace-style': [ON, '1tbs', { allowSingleLine: true }],
-    'comma-dangle': [ON, 'never'],
+    'comma-dangle': [ON, 'always-multiline'],
     'comma-spacing': ERROR,
     'comma-style': [ON, 'last'],
     'complexity': [ON, 8],   // default is 20
@@ -141,4 +141,11 @@ module.exports = {
     'yield-star-spacing': ON,
     'yoda': ERROR,
   },
+  overrides: [{
+    files: ['test/??-*.js'],
+    rules: {
+      'comma-dangle': [ON, 'never'],
+      'no-unused-expressions': OFF,
+    }
+  }]
 }

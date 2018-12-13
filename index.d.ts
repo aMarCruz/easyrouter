@@ -84,9 +84,9 @@ declare interface Router {
    */
   navigate(hash: string, force?: boolean): this
 
-  onEnter(cb: Router.onEnterFn): this
+  onEnter(cb: Router.OnEnterFn): this
 
-  onExit(cb: Router.onExitFn): this
+  onExit(cb: Router.OnExitFn): this
 
   /**
    * Stops the router.
@@ -108,8 +108,8 @@ declare namespace Router {
   type ExitFn     = (this: RouteContext, prevParams: Params) => boolean | void
   type EnterFn    = (this: RouteContext, currentParams: Params) => void
   type QueryFn    = (this: RouteContext, currentParams: Params) => boolean | void
-  type onExitFn   = (this: Router, prevRoute: RouteContext | null) => void
-  type onEnterFn  = (this: Router, currentRoute: RouteContext | null) => void
+  type OnExitFn   = (this: Router, prevRoute: RouteContext | null) => void
+  type OnEnterFn  = (this: Router, currentRoute: RouteContext | null) => void
   type RescueFn   = (this: Router, currentHash: string) => void
 
   interface Route {
@@ -142,6 +142,15 @@ declare namespace Router {
     [k: string]: any
   }
 
+  interface Context {
+    isActive: boolean,
+    lastHash: string,
+    lastRoute: RouteContext | null,
+    onEnter?: OnEnterFn,
+    onExit?: OnExitFn,
+    rescue?: RescueFn,
+  }
+
   interface Router {
     /**
      * Register one or more routes.
@@ -162,10 +171,10 @@ declare namespace Router {
     clear(): this
 
     /**
-     * Returns the context of the current route, or `null` if there's no
-     * current route (like after a `reset`).
+     * Returns the context of the router. It includes the current route or
+     * `null` if there's no saved route (like after a `reset`).
      */
-    getContext(): RouteContext | null,
+    getContext(): Context,
 
     /**
      * Start handling hash changes.
@@ -246,7 +255,7 @@ declare namespace Router {
      *
      * @param cb Enter callback.
      */
-    onEnter(cb: onEnterFn): this
+    onEnter(cb: OnEnterFn): this
 
     /**
      * Set the global callback called when the hash changes, before the
@@ -263,7 +272,7 @@ declare namespace Router {
      *
      * @param cb Callback
      */
-    onExit(cb: onExitFn): this
+    onExit(cb: OnExitFn): this
 
     /**
      * Stops the router.

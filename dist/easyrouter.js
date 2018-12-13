@@ -12,32 +12,17 @@ var router = (function easyRouter(window, UNDEF) {
     var S_PARM_PREFIX = ':';
     var S_PARM_NAME = '~';
     var S_ROUTE_NODE = '@';
-    var location = window.location;
+    var S_HASH_EVT = 'hashchange';
     var _decode = decodeURIComponent;
     var _noop = function (s) { return s; };
-    var _active = {
-        hash: '',
-        route: NULL,
-    };
+    var _active = false;
+    var _hash = '';
+    var _route = NULL;
     var _routes = {};
     var _rescue;
     var _onEnter;
     var _onExit;
-    /**
-     * Check if the paramater is a function.
-     *
-     * @param {any} fn to check
-     * @returns {Function|undefined} Callback
-     * @private
-     */
     var _fn = function (fn) { return (typeof fn === 'function' ? fn : UNDEF); };
-    /**
-     * Hash normalization, adds the first '#' and removes the last slash.
-     *
-     * @param   {string} hash The hash to normalize
-     * @returns {string} Normalized hash.
-     * @private
-     */
     var _normalize = function (hash) {
         switch (hash) {
             case '':
@@ -50,28 +35,12 @@ var router = (function easyRouter(window, UNDEF) {
                 return hash.replace(R_HASH, '#/$1');
         }
     };
-    /**
-     * Determinate if two route paths have the same params.
-     *
-     * @param {RouteContext} a Route
-     * @param {RouteContext} b Route
-     * @returns {boolean}
-     * @private
-     */
     var _equ = function (a, b) {
         if (a.path.toLowerCase() !== b.path.toLowerCase()) {
             return false;
         }
         return _split(a.path).every(function (p) { return !(p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]); });
     };
-    /**
-     * Remove the first '#/' and trailing slashes from the given hash
-     * and return its parts.
-     *
-     * @param {string} hash Hash to split
-     * @returns {string[]} Separate parts of the hash.
-     * @private
-     */
     var _split = function (hash) {
         var parts = hash.replace(R_HASH, '$1').split('/');
         var item;
@@ -87,14 +56,6 @@ var router = (function easyRouter(window, UNDEF) {
         }
         return parts;
     };
-    /**
-     * Makes a shallow copy of route `src`.
-     * Returns `null` if `src` is falsy.
-     *
-     * @param   {Route|null|undefined} src Source object
-     * @returns {RouteContext|null} New object with the properties of `src`.
-     * @private
-     */
     var _make = function (src, hash, params) {
         if (!src) {
             return NULL;
@@ -109,15 +70,6 @@ var router = (function easyRouter(window, UNDEF) {
         dest.params = params;
         return dest;
     };
-    /**
-     * Find the route which the given hash belongs to.
-     *
-     * @param   {string} part The hash part w/o querystring
-     * @param   {string} hash The full hash
-     * @param   {Function} unesc Decoding function
-     * @returns {RouteContext|null}
-     * @private
-     */
     var _seek = function (part, hash, unesc) {
         var parts = part.replace(R_HASH, '$1').split('/');
         var parms = {};
@@ -140,15 +92,6 @@ var router = (function easyRouter(window, UNDEF) {
         }
         return _make(route[S_ROUTE_NODE], hash, parms);
     };
-    /**
-     * Parses the queryString part.
-     *
-     * @param {RouteContext|null} route Route object
-     * @param {string} queryStr Query string
-     * @param {Function} unesc Decoding function
-     * @returns {RouteContext|null} The route
-     * @private
-     */
     var _query = function (route, queryStr, unesc) {
         if (route) {
             var qs = queryStr.split('&');
@@ -195,31 +138,18 @@ var router = (function easyRouter(window, UNDEF) {
         return R;
     };
     var R;
-    /**
-     * Run the query callback if we have the same params of the previous
-     * route for the non-queryStr parts (i.e. route is already loaded).
-     * @param hash
-     */
     var _queryAbort = function (prev, next) {
-        if (prev && prev.query && _equ(prev, next)) {
-            if (prev.query(next.params) === false) {
-                _active.hash = next.hash;
-                _active.route = next;
-                return true;
-            }
+        if (prev && prev.query &&
+            _equ(prev, next) && prev.query(next.params) === false) {
+            R.navigate(prev.hash);
+            return true;
         }
         return false;
     };
-    /**
-     * Trigged on hash changes.
-     *
-     * @param   {string}  hash - The hash to run
-     * @returns {boolean} success flag
-     */
     var _run = function (hash) {
         hash = _normalize(hash);
-        if (_active.hash.toLowerCase() !== hash.toLowerCase()) {
-            var prev = _active.route;
+        if (_hash.toLowerCase() !== hash.toLowerCase()) {
+            var prev = _route;
             var next = R.match(hash);
             if (next && _queryAbort(prev, next)) {
                 return false;
@@ -230,8 +160,8 @@ var router = (function easyRouter(window, UNDEF) {
             if (_onExit) {
                 _onExit.call(R, prev);
             }
-            _active.hash = hash;
-            _active.route = next;
+            _hash = hash;
+            _route = next;
             if (_onEnter) {
                 _onEnter.call(R, next);
             }
@@ -246,9 +176,12 @@ var router = (function easyRouter(window, UNDEF) {
         return false;
     };
     var _handler = function () {
-        _run(location.hash);
+        return _run(location.hash);
     };
     R = {
+        _split: _split,
+        _normalize: _normalize,
+        _run: _run,
         /**
          * Register one or more routes (rules and methods).
          *
@@ -278,8 +211,15 @@ var router = (function easyRouter(window, UNDEF) {
          * @returns {RouteContext}
          */
         getContext: function () {
-            var route = _active.route;
-            return route ? _make(route, route.hash, route.params) : null;
+            var route = _route;
+            return {
+                isActive: _active,
+                lastHash: _hash,
+                lastRoute: route ? _make(route, route.hash, route.params) : null,
+                onEnter: _onEnter,
+                onExit: _onExit,
+                rescue: _rescue,
+            };
         },
         /**
          * Start handling hash changes.
@@ -296,21 +236,23 @@ var router = (function easyRouter(window, UNDEF) {
         listen: function (root) {
             // istanbul ignore else
             if ('onhashchange' in window) {
-                window.addEventListener('hashchange', _handler, true);
+                R.stop();
+                window.addEventListener(S_HASH_EVT, _handler, true);
             }
             else {
                 throw new Error("easyRouter: Your browser has no 'hashchange' support");
             }
             root = root && _normalize(root) || '#';
             if (!_rescue) {
-                _rescue = function () { location.hash = root; };
+                _rescue = function () { R.navigate(root); };
             }
             if (location.hash) {
                 _run(location.hash);
             }
             else {
-                location.hash = root;
+                R.navigate(root);
             }
+            _active = true;
             return R;
         },
         /**
@@ -338,8 +280,8 @@ var router = (function easyRouter(window, UNDEF) {
          * @returns {this} This chainable object.
          */
         reset: function () {
-            _active.hash = '';
-            _active.route = NULL;
+            _hash = '';
+            _route = NULL;
             _rescue = _onEnter = _onExit = UNDEF;
             return R.clear();
         },
@@ -389,13 +331,13 @@ var router = (function easyRouter(window, UNDEF) {
          */
         navigate: function (hash, force) {
             if (force) {
-                _active.hash = '@';
+                _hash = '@';
             }
             if (force && _normalize(location.hash) === _normalize(hash)) {
                 _run(hash);
             }
             else {
-                location.hash = hash;
+                location.href = hash;
             }
             return R;
         },
@@ -442,7 +384,8 @@ var router = (function easyRouter(window, UNDEF) {
             return R;
         },
         stop: function () {
-            window.removeEventListener('hashchange', _handler, true);
+            _active = false;
+            window.removeEventListener(S_HASH_EVT, _handler, true);
             return R;
         },
     };
@@ -450,3 +393,4 @@ var router = (function easyRouter(window, UNDEF) {
 })(window, void 0);
 
 module.exports = router;
+//# sourceMappingURL=easyrouter.js.map

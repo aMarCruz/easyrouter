@@ -1,19 +1,22 @@
 /* eslint-disable no-unused-expressions */
 
+var _g = typeof window !== 'undefined' && window.self === window ? window : global
+
+_g.isNode = !(_g.self && _g.self.location && _g.self.location.href)
+
 // Fake window
-if (typeof global.window != 'object') {
+if (_g.isNode) {
 
   const EVT = 'hashchange'
   var _cb = null
   var _href = ''
   var _hash = ''
 
-  var window = global.window = {
+  _g.window = {
     location: {
       set href (value) {
         const ix = value.indexOf('#')
-        _href = value
-
+        ix !== 0 && (_href = value)    // accept href = "#foo"
         value = ~ix ? value.slice(ix) : ''
         this.hash = value
       },
@@ -35,22 +38,22 @@ if (typeof global.window != 'object') {
       },
       get hash () {
         return _hash
-      }
-    }
+      },
+    },
   }
 
-  Object.defineProperties(window, {
+  Object.defineProperties(_g.window, {
     addEventListener: {
       value: (evt, cb) => {
         if (evt === EVT) { _cb = cb }
       },
-      configurable: true
+      configurable: true,
     },
     removeEventListener: {
       value: (evt) => {
         if (evt === EVT) { _cb = null }
       },
-      configurable: true
+      configurable: true,
     },
     onhashchange: {
       get () {
@@ -59,23 +62,23 @@ if (typeof global.window != 'object') {
       set (cb) {
         cb ? this.addEventListener(EVT, cb) : this.removeEventListener(EVT, cb)
       },
-      configurable: true
-    }
+      configurable: true,
+    },
   })
 
-  Object.defineProperties(window.location, {
+  Object.defineProperties(_g.window.location, {
     toString: {
       value: () => _href,
-      configurable: true
-    }
+      configurable: true,
+    },
   })
 
-  global.location = window.location
-  window.location.href = 'https://nowhere.com#/none'
+  _g.location = _g.window.location
+  _g.window.location.href = 'https://nowhere.com#/none'
 }
 
-global.expect = require('expect')
-global.router = require('../')
+_g.expect = require('expect')
+_g.router = require('../')
 
 require('./00-initialization.js')
 require('./01-normalize.js')

@@ -13,6 +13,8 @@
     "lint": "eslint test/*.js",
     "pretest": "tsc && rollup --environment BUILD:test -c -m -f cjs -o dist/easyrouter.js",
     "test": "nyc mocha test/index.js",
+    "prek": "tsc && rollup --environment BUILD:test -c -m -n router -f umd -o dist/easyrouter.umd.js",
+    "k": "karma start ./test/karma.conf.js",
     "coverage": "nyc report -r=lcov",
     "prebuild": "rimraf -rf ./dist/**",
     "build": "tsc -p tsconfig-p.json && rollup -c && npm run min",
@@ -48,9 +50,14 @@
     "url": "https://github.com/aMarCruz/easyrouter/issues"
   },
   "devDependencies": {
+    "@types/karma": "^3.0.1",
     "@types/mocha": "^5.2.5",
     "eslint": "^5.10.0",
     "expect": "1.20.2",
+    "karma": "^3.1.3",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-mocha": "^1.3.0",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
     "rimraf": "^2.6.2",

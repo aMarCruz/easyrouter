@@ -18,12 +18,12 @@ interface IRouter {
   // Public API
   add(routes: Route | Route[], cb?: Router.EnterFn): this
   clear(): this
-  getContext(): RouteContext | null
+  getContext(): Router.Context
   listen(root: string): this
   match(hash: string): RouteContext | null
   navigate(hash: string, force?: boolean): this
-  onEnter(cb: Router.onEnterFn): this
-  onExit(cb: Router.onExitFn): this
+  onEnter(cb: Router.OnEnterFn): this
+  onExit(cb: Router.OnExitFn): this
   rescue(cb: Router.RescueFn): this
   reset(): this
   route(path: string): Route | null
@@ -42,22 +42,20 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
   const S_PARM_PREFIX = ':'
   const S_PARM_NAME   = '~'
   const S_ROUTE_NODE  = '@'
+  const S_HASH_EVT    = 'hashchange'
 
-  const location  = window.location
-  const _decode   = decodeURIComponent
-
-  const _noop = (s: string) => s
-
-  const _active = {
-    hash: '',
-    route: NULL as RouteContext | null,
-  }
+  const _decode = decodeURIComponent
+  const _noop   = (s: string) => s
 
   // tslint:disable:no-var-keyword
+  var _active = false
+  var _hash   = ''
+  var _route  = NULL as RouteContext | null
   var _routes = {} as ChainedRoute
+  // global callbacks
   var _rescue: Router.RescueFn | undefined
-  var _onEnter: Router.onEnterFn | undefined
-  var _onExit: Router.onExitFn | undefined
+  var _onEnter: Router.OnEnterFn | undefined
+  var _onExit: Router.OnExitFn | undefined
   // tslint:enable:no-var-keyword
 
   /**
@@ -242,7 +240,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
 
     if (prev && prev.query &&
         _equ(prev, next) && prev.query(next.params) === false) {
-      location.hash = prev.hash
+      R.navigate(prev.hash)
       return true
     }
 
@@ -256,8 +254,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
     hash = _normalize(hash)
 
     // Must preserve the case of the hash
-    if (_active.hash.toLowerCase() !== hash.toLowerCase()) {
-      const prev = _active.route
+    if (_hash.toLowerCase() !== hash.toLowerCase()) {
+      const prev = _route
       const next = R.match(hash)
 
       // Hook for query-string changes through the `query` method of the route.
@@ -279,8 +277,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
       }
 
       // swap the current route info
-      _active.hash = hash
-      _active.route = next
+      _hash = hash
+      _route = next
 
       // call the global enter routine
       if (_onEnter) {
@@ -307,7 +305,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
    * Default handler for hash changes
    */
   const _handler = () => {
-    _run(location.hash)
+    return _run(location.hash)
   }
 
   //#region Public API -------------------------------------------------------
@@ -315,9 +313,9 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
   R = {
 
     /*#if process.env.BUILD === 'test'
-    _split,
-    _normalize,
-    _run,
+    _split: _split,
+    _normalize: _normalize,
+    _run: _run,
     //#endif */
 
     /**
@@ -351,14 +349,21 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
     },
 
     /**
-     * Returns the context of the current route, or `null` if there's no
-     * current route.
+     * Returns the context of the router. It includes the current route or
+     * `null` if there's no saved route (like after a `reset`).
      *
-     * @returns {RouteContext}
+     * @returns {Router.Context}
      */
     getContext() {
-      const route = _active.route
-      return route ? _make(route, route.hash, route.params) : null
+      const route = _route
+      return {
+        isActive: _active,
+        lastHash: _hash,
+        lastRoute: route ? _make(route, route.hash, route.params) : null,
+        onEnter: _onEnter,
+        onExit: _onExit,
+        rescue: _rescue,
+      }
     },
 
     /**
@@ -378,7 +383,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
       // check browser haschange support
       // istanbul ignore else
       if ('onhashchange' in window) {
-        window.addEventListener('hashchange', _handler, true)
+        R.stop()
+        window.addEventListener(S_HASH_EVT, _handler, true)
       } else {
         throw new Error("easyRouter: Your browser has no 'hashchange' support")
       }
@@ -388,7 +394,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
 
       // set a default rescue funtion if there's no one
       if (!_rescue) {
-        _rescue = function () { location.hash = root! }
+        _rescue = function () { R.navigate(root!) }
       }
 
       // if we have a hash, run it
@@ -397,8 +403,11 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
 
       // else if we have a root, set it (it will run automatically)
       } else {
-        location.hash = root
+        R.navigate(root)
       }
+
+      // mark the router as active
+      _active = true
 
       return R
     },
@@ -429,8 +438,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
      * @returns {this} This chainable object.
      */
     reset() {
-      _active.hash  = ''
-      _active.route = NULL
+      _hash  = ''
+      _route = NULL
       _rescue = _onEnter = _onExit = UNDEF
       return R.clear()
     },
@@ -487,13 +496,13 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
     navigate(hash: string, force?: boolean) {
 
       if (force) {
-        _active.hash = '@'
+        _hash = '@'
       }
 
       if (force && _normalize(location.hash) === _normalize(hash)) {
         _run(hash)
       } else {
-        location.hash = hash
+        location.href = hash
       }
 
       return R
@@ -517,7 +526,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
      * @param {Function} cb Enter callback.
      * @returns {this} This chainable object.
      */
-    onEnter(cb: Router.onEnterFn) {
+    onEnter(cb: Router.OnEnterFn) {
       _onEnter = _fn(cb)
       return R
     },
@@ -538,7 +547,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
      * @param {Function} cb Callback
      * @returns {this} This chainable object.
      */
-    onExit(cb: Router.onExitFn) {
+    onExit(cb: Router.OnExitFn) {
       _onExit = _fn(cb)
       return R
     },
@@ -551,7 +560,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
      * You will need to call `listen` to re-enable the router.
      */
     stop() {
-      window.removeEventListener('hashchange', _handler, true)
+      _active = false
+      window.removeEventListener(S_HASH_EVT, _handler, true)
       return R
     },
 

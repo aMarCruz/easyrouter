@@ -4,6 +4,7 @@
 import sourcemaps from 'rollup-plugin-sourcemaps'
 import cleanup from 'rollup-plugin-cleanup'
 import jscc from 'rollup-plugin-jscc'
+
 const external = ['fs', 'path']
 
 const banner = `/**
@@ -21,15 +22,15 @@ export default {
     isDev ? sourcemaps() : undefined,
     jscc({
       asloader: false,
-      prefixes: [/\/[/*]/]
+      prefixes: [/\/[/*]/],
     }),
     cleanup({
-      comments: ['jsdoc', 'istanbul']
-    })
+      comments: ['jsdoc', 'istanbul'],
+    }),
   ],
   output: [
     { banner, file: 'dist/easyrouter.js', format: 'cjs' },
-    { banner, file: 'dist/easyrouter.umd.js', format: 'umd', name: 'router' }
+    { banner, file: 'dist/easyrouter.umd.js', format: 'umd', name: 'router' },
   ],
-  external
+  external,
 }
