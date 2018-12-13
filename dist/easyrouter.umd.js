@@ -1,357 +1,458 @@
-/*
-  EasyRouter v1.0.0
-
-----------------------------------------------------------------*/
+/**
+* easyRouter v1.0.0
+* @author aMarCruz
+* @licence MIT
+*/
 /* eslint-disable */
-
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.router = factory());
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+    typeof define === 'function' && define.amd ? define(factory) :
+    (global.router = factory());
 }(this, (function () { 'use strict';
 
-/**
- * easyRouter v1.0.0
- * @author aMarCruz
- * @license MIT
- */
-//import normalize from './normalize'
+    var router = (function easyRouter(window, UNDEF) {
+        var NULL = null;
+        var R_HASH = /^#?\/*(.*?)\/*$/;
+        var S_PARM_PREFIX = ':';
+        var S_PARM_NAME = '~';
+        var S_ROUTE_NODE = '@';
+        var location = window.location;
+        var _decode = decodeURIComponent;
+        var _noop = function (s) { return s; };
+        var _active = {
+            hash: '',
+            route: NULL,
+        };
+        var _routes = {};
+        var _rescue;
+        var _onEnter;
+        var _onExit;
+        /**
+         * Check if the paramater is a function.
+         *
+         * @param {any} fn to check
+         * @returns {Function|undefined} Callback
+         * @private
+         */
+        var _fn = function (fn) { return (typeof fn === 'function' ? fn : UNDEF); };
+        /**
+         * Hash normalization, adds the first '#' and removes the last slash.
+         *
+         * @param   {string} hash The hash to normalize
+         * @returns {string} Normalized hash.
+         * @private
+         */
+        var _normalize = function (hash) {
+            switch (hash) {
+                case '':
+                case '#':
+                    return '#';
+                case '/':
+                case '#/':
+                    return '#/';
+                default:
+                    return hash.replace(R_HASH, '#/$1');
+            }
+        };
+        /**
+         * Determinate if two route paths have the same params.
+         *
+         * @param {RouteContext} a Route
+         * @param {RouteContext} b Route
+         * @returns {boolean}
+         * @private
+         */
+        var _equ = function (a, b) {
+            if (a.path.toLowerCase() !== b.path.toLowerCase()) {
+                return false;
+            }
+            return _split(a.path).every(function (p) { return !(p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]); });
+        };
+        /**
+         * Remove the first '#/' and trailing slashes from the given hash
+         * and return its parts.
+         *
+         * @param {string} hash Hash to split
+         * @returns {string[]} Separate parts of the hash.
+         * @private
+         */
+        var _split = function (hash) {
+            var parts = hash.replace(R_HASH, '$1').split('/');
+            var item;
+            var i = parts.length;
+            while (--i >= 0) {
+                item = parts[i];
+                if (!item || item === '#') {
+                    parts.splice(i, 1);
+                }
+                else if (item[0] !== S_PARM_PREFIX) {
+                    parts[i] = item.toLowerCase();
+                }
+            }
+            return parts;
+        };
+        /**
+         * Makes a shallow copy of route `src`.
+         * Returns `null` if `src` is falsy.
+         *
+         * @param   {Route|null|undefined} src Source object
+         * @returns {RouteContext|null} New object with the properties of `src`.
+         * @private
+         */
+        var _make = function (src, hash, params) {
+            if (!src) {
+                return NULL;
+            }
+            var dest = {};
+            var keys = Object.keys(src);
+            for (var i = 0; i < keys.length; i++) {
+                var prop = keys[i];
+                dest[prop] = src[prop];
+            }
+            dest.hash = hash;
+            dest.params = params;
+            return dest;
+        };
+        /**
+         * Find the route which the given hash belongs to.
+         *
+         * @param   {string} part The hash part w/o querystring
+         * @param   {string} hash The full hash
+         * @param   {Function} unesc Decoding function
+         * @returns {RouteContext|null}
+         * @private
+         */
+        var _seek = function (part, hash, unesc) {
+            var parts = part.replace(R_HASH, '$1').split('/');
+            var parms = {};
+            var route = _routes;
+            var name;
+            for (var i = 0; i < parts.length; i++) {
+                part = unesc(parts[i]);
+                name = part.toLowerCase();
+                name = name in route ? name : S_PARM_PREFIX in route ? S_PARM_PREFIX : '*';
+                route = route[name];
+                if (!route) {
+                    return NULL;
+                }
+                if (name === '*') {
+                    break;
+                }
+                if (route[S_PARM_NAME]) {
+                    parms[route[S_PARM_NAME]] = part;
+                }
+            }
+            return _make(route[S_ROUTE_NODE], hash, parms);
+        };
+        /**
+         * Parses the queryString part.
+         *
+         * @param {RouteContext|null} route Route object
+         * @param {string} queryStr Query string
+         * @param {Function} unesc Decoding function
+         * @returns {RouteContext|null} The route
+         * @private
+         */
+        var _query = function (route, queryStr, unesc) {
+            if (route) {
+                var qs = queryStr.split('&');
+                for (var i = 0; i < qs.length; i++) {
+                    var pair = qs[i].split('=');
+                    route.params[unesc(pair[0])] = unesc(pair[1]);
+                }
+            }
+            return route;
+        };
+        /**
+         * Main method to define a new route.
+         *
+         * The path is normalized and converted to lower case, except the
+         * parameter names. Some examples:
+         *
+         * - '#/path/subpath'    => '#/path/subpath' (no changes)
+         * - '/path/subpath'     => '#/path/subpath' (add the first '#')
+         * - '#path/subpath'     => '#/path/subpath' (add the first '/')
+         * - '#path/SubPath'     => '#/path/subpath' (to lower case)
+         * - '#path/SubPath/:Id' => '#/path/subpath/:Id' (to lower case, except ':Id')
+         *
+         * @param {RouteContext} src
+         * @param {Callback} [enter]
+         * @returns {RouteContext} Route
+         */
+        var _add = function (src, enter) {
+            var path = _normalize(src.path);
+            var route = _routes;
+            _split(path).forEach(function (part) {
+                var parm = part[0] === S_PARM_PREFIX;
+                var name = parm ? S_PARM_PREFIX : part;
+                route = route[name] || (route[name] = {});
+                if (parm) {
+                    route[S_PARM_NAME] = part.slice(1);
+                }
+            });
+            route = route[S_ROUTE_NODE] = { path: path, enter: enter };
+            Object.keys(src).forEach(function (p) {
+                if (p !== 'path') {
+                    route[p] = src[p];
+                }
+            });
+            return R;
+        };
+        var R;
+        /**
+         * Run the query callback if we have the same params of the previous
+         * route for the non-queryStr parts (i.e. route is already loaded).
+         * @param hash
+         */
+        var _queryAbort = function (prev, next) {
+            if (prev && prev.query && _equ(prev, next)) {
+                if (prev.query(next.params) === false) {
+                    _active.hash = next.hash;
+                    _active.route = next;
+                    return true;
+                }
+            }
+            return false;
+        };
+        /**
+         * Trigged on hash changes.
+         *
+         * @param   {string}  hash - The hash to run
+         * @returns {boolean} success flag
+         */
+        var _run = function (hash) {
+            hash = _normalize(hash);
+            if (_active.hash.toLowerCase() !== hash.toLowerCase()) {
+                var prev = _active.route;
+                var next = R.match(hash);
+                if (next && _queryAbort(prev, next)) {
+                    return false;
+                }
+                if (prev && prev.exit && prev.exit(prev.params) === false) {
+                    return false;
+                }
+                if (_onExit) {
+                    _onExit.call(R, prev);
+                }
+                _active.hash = hash;
+                _active.route = next;
+                if (_onEnter) {
+                    _onEnter.call(R, next);
+                }
+                if (next && next.enter) {
+                    next.enter(next.params);
+                    return true;
+                }
+                if (_rescue && hash) {
+                    _rescue.call(R, hash);
+                }
+            }
+            return false;
+        };
+        var _handler = function () {
+            _run(location.hash);
+        };
+        R = {
+            /**
+             * Register one or more routes (rules and methods).
+             *
+             * @param   {RouteContext|RouteContext[]} data Array of templates for the routes
+             * @param   {Function} [cb] Optional 'on' function
+             * @returns {this} This chainable object.
+             * @deprecated
+             */
+            add: function (data, cb) {
+                cb = _fn(cb);
+                if (Array.isArray(data)) {
+                    data.forEach(function (src) { _add(src, cb); });
+                }
+                else {
+                    _add(data, cb);
+                }
+                return R;
+            },
+            clear: function () {
+                _routes = {};
+                return R;
+            },
+            /**
+             * Returns the context of the current route, or `null` if there's no
+             * current route.
+             *
+             * @returns {RouteContext}
+             */
+            getContext: function () {
+                var route = _active.route;
+                return route ? _make(route, route.hash, route.params) : null;
+            },
+            /**
+             * Start handling hash changes.
+             *
+             * `root` is the hash for URLs without a defined path to which a user
+             * will be redirected.
+             *
+             * This route will be automatically selected in the page load, unless
+             * the page already has a hash.
+             *
+             * @param   {string} [root] The "root" hash (default is "#").
+             * @returns {this} This chainable object.
+             */
+            listen: function (root) {
+                // istanbul ignore else
+                if ('onhashchange' in window) {
+                    window.addEventListener('hashchange', _handler, true);
+                }
+                else {
+                    throw new Error("easyRouter: Your browser has no 'hashchange' support");
+                }
+                root = root && _normalize(root) || '#';
+                if (!_rescue) {
+                    _rescue = function () { location.hash = root; };
+                }
+                if (location.hash) {
+                    _run(location.hash);
+                }
+                else {
+                    location.hash = root;
+                }
+                return R;
+            },
+            /**
+             * Set the global callback called when no rule matches the hash or the
+             * route has no an `enter` method.
+             *
+             * If you do not provide a `rescue` method, the router will set one to
+             * redirect your users to the "root" defined by the `listen` method.
+             *
+             * This lets you provide instant user feedback if they click an
+             * undefined route.
+             *
+             * @param {Function} cb Callback to execute.
+             * @returns {this} This chainable object.
+             */
+            rescue: function (cb) {
+                _rescue = _fn(cb);
+                return R;
+            },
+            /**
+             * Clears the routes and global callbacks, without stopping the router.
+             *
+             * Generally, this method will be followed by `stop` or by a re-initialization.
+             *
+             * @returns {this} This chainable object.
+             */
+            reset: function () {
+                _active.hash = '';
+                _active.route = NULL;
+                _rescue = _onEnter = _onExit = UNDEF;
+                return R.clear();
+            },
+            /**
+             * Returns the route object assigned to a given rule.
+             *
+             * The parameter is the rule used to register a route, it is not the hash
+             * of the current location.
+             *
+             * The returned object does not includes the hash nor parameters values.
+             *
+             * @param {string} path Rule to match in route `path` property.
+             * @returns {Route|null}
+             */
+            route: function (path) {
+                var parts = _split(_normalize(path));
+                var route = _routes;
+                for (var part = void 0, i = 0; i < parts.length && route; i++) {
+                    part = parts[i];
+                    route = route[part[0] === S_PARM_PREFIX ? S_PARM_PREFIX : part];
+                }
+                return route && route[S_ROUTE_NODE] || NULL;
+            },
+            /**
+             * Returns a Route object for a given hash.
+             *
+             * @param   {string} hash normalized hash
+             * @returns {RouteContext|null} `null` if href has not matching route.
+             */
+            match: function (hash) {
+                var unesc = hash.indexOf('%') < 0 ? _noop : _decode;
+                var start = hash.indexOf('?');
+                var query = start < 0 ? '' : hash.substr(start + 1);
+                var path = start < 0 ? hash : hash.substr(0, start);
+                return query
+                    ? _query(_seek(path, hash, unesc), query, unesc)
+                    : _seek(path, hash, unesc);
+            },
+            /**
+             * Go to the given hash.
+             *
+             * If force is true, the callback runs even if the hash is current.
+             *
+             * @param   {string}  hash The target hash
+             * @param   {Boolean} [force] `true` to always run the callback
+             * @returns {this} This chainable object.
+             */
+            navigate: function (hash, force) {
+                if (force) {
+                    _active.hash = '@';
+                }
+                if (force && _normalize(location.hash) === _normalize(hash)) {
+                    _run(hash);
+                }
+                else {
+                    location.hash = hash;
+                }
+                return R;
+            },
+            /**
+             * Set the global callback called _always_ that the hash changes, after
+             * the `route.query`, `route.exit` and `router.onExit` methods.
+             *
+             * The parameter received by the callback is an object with the next route
+             * data, and the default context (`this`) is the router itself.
+             *
+             * _NOTE:_
+             *
+             * This callback will be called even if there's no match for the next hash
+             * or the new location has no hash. In this cases the parameter passed to
+             * the callback will be `null`.
+             *
+             * In the last case it will be called once, when the hash is removed.
+             *
+             * @param {Function} cb Enter callback.
+             * @returns {this} This chainable object.
+             */
+            onEnter: function (cb) {
+                _onEnter = _fn(cb);
+                return R;
+            },
+            /**
+             * Set the global callback called when the hash changes, before the
+             * `route.enter`, `router.onEnter` and `router.rescue` methods.
+             *
+             * The parameter received by the callback is an object with the previous
+             * route data, and the default context (`this`) is the router itself.
+             *
+             * _NOTE:_
+             *
+             * This callback will be called even if there's no match for the previous
+             * hash or the previous location has no hash. In this cases the
+             * parameter passed to the callback will be `null`.
+             *
+             * @param {Function} cb Callback
+             * @returns {this} This chainable object.
+             */
+            onExit: function (cb) {
+                _onExit = _fn(cb);
+                return R;
+            },
+            stop: function () {
+                window.removeEventListener('hashchange', _handler, true);
+                return R;
+            },
+        };
+        return R.reset();
+    })(window, void 0);
 
-
-var router = (function easyRouter(window, UNDEF) {
-
-  var location = window.location;
-  var _decode  = window.decodeURIComponent;
-
-  var _noop = function (s) { return s; };
-
-  var _active = {};
-  var _routes = {};
-  var _rescue;
-  var _enter;
-  var _exit;
-
-  function _fn(fn) {
-    return typeof fn == 'function' ? fn : UNDEF
-  }
-
-  /**
-   * Hash normalization, adds the first '#' and removes the last slash.
-   *
-   * @param   {String} hash - The hash to normalize
-   * @returns {String} Normalized hash.
-   * @private
-   */
-  function normalize(hash) {
-
-    // if the hash is empty, this will output the '#' alone
-    if (hash[0] !== '#') {
-      hash = "#" + hash;
-    }
-
-    // only removing if length > 2 (allows '#/' alone)
-    return hash.length > 2 && hash.slice(-1) === '/'
-        ? hash.slice(0, -1) : hash
-  }
-
-  /**
-   * Remove the first '#/' and trailing slashes from the given hash
-   * and returns it parts.
-   *
-   * @param   {string} hash - Hash to split
-   * @returns {string[]} Separate components of the hash
-   * @private
-   */
-  function _split(hash) {
-    return hash
-          .replace(/^#?\/*(.*)\/*$/, '$1')
-          .toLowerCase()
-          .split('/')
-  }
-
-  function _seek(hash, esc) {
-    var parts  = _split(hash);
-    var params = {};
-    var route = _routes;
-
-    for (var i = 0; i < parts.length; i++) {
-      var part = esc(parts[i]);
-      var name = part in route ? part : ':' in route ? ':' : '*';
-
-      route = route[name];
-      if (!route) {
-        return UNDEF
-      }
-      if (name === '*') {
-        break
-      }
-      if (route['~']) {
-        params[route['~']] = part;
-      }
-    }
-
-    (route = route['@']).params = params;
-    return route
-  }
-
-  function _query(ctx, url, esc) {
-    if (url && ctx) {
-      var qs = url.split('&');
-
-      for (var i = 0; i < qs.length; i++) {
-        var pair = qs[i].split('=');
-
-        ctx.params[pair[0]] = esc(pair[1]);
-      }
-    }
-    return ctx
-  }
-
-  /*
-    Main method to define a new route.
-   */
-  function _add(src, cb) {
-    var path = normalize(src.path);
-    var route = _routes;
-
-    _split(path).forEach(function (part) {
-      var parm = part[0] === ':' ? ':' : 0;
-      var name = parm || part;
-
-      route = route[name] || (route[name] = {});
-      if (parm) { route['~'] = part.slice(1); }
-    });
-
-    route = route['@'] = { enter: cb };
-
-    if (src) {
-      Object.keys(src).forEach(function (p) {
-        route[p] = p === 'path' ? path : src[p];
-      });
-    }
-    return route
-  }
-
-
-  var _R = {
-
-    /**
-     * Reset the router to their predefined values
-     *
-     * @returns {object} This chainable object
-     */
-    reset: function reset() {
-      this.clear();
-      _active.hash  = '';
-      _active.route = _rescue = _enter = _exit = UNDEF;
-      return this
-    },
-
-    clear: function clear() {
-      _routes = {};
-      return this
-    },
-
-    /**
-     * Allows to define one or more routes.
-     *
-     * @param   {Array}    arr  - Array of templates for the routes
-     * @param   {Function} [cb] - Optional 'on' function
-     * @returns {Object}   This chainable object
-     */
-    concat: function concat(arr, cb) {
-      cb = _fn(cb);
-
-      if (Array.isArray(arr)) {
-        arr.forEach(function (src) { _add(src, cb); });
-      } else {
-        _add(arr, cb);
-      }
-      return this
-    },
-
-    /**
-     * If a route somehow ended up in your system without being properly bound to an action,
-     * you can specify a "rescue" method that will be called.
-     * This lets you provide instant user feedback if they click an undefined route.
-     *
-     * @param {Function} cb - The function to exec for routes without one.
-     * @returns {Object}      This chainable object
-     */
-    rescue: function rescue(cb) {
-      _rescue = _fn(cb);
-      return this
-    },
-
-    enter: function enter(cb) {
-      _enter = _fn(cb);
-      return this
-    },
-
-    exit: function exit(cb) {
-      _exit = _fn(cb);
-      return this
-    },
-
-    route: function route(hash) {
-      var parts = _split(normalize(hash));
-      var route = _routes;
-
-      for (var i = 0; i < parts.length; i++) {
-        var part = parts[i];
-
-        route = route[part[0] === ':' ? ':' : part];
-        if (!route) {
-          return UNDEF
-        }
-      }
-
-      return route['@']
-    },
-
-    /**
-     * Returns an object with { ruote, params } for matching route
-     *
-     * @param   {string} hash - normalized hash
-     * @returns {object} `false` if href has not matching route
-     */
-    match: function match(hash) {
-      var aqs = hash.split('?');
-      var esc = hash.indexOf('%') < 0 ? _noop : _decode;
-
-      return _query(_seek(aqs[0], esc), aqs[1], esc)
-    },
-
-    /**
-     * Trigger on hash changes
-     *
-     * @param   {string}  hash - The hash to run
-     * @returns {boolean} success flag
-     */
-    _run: function _run(hash) {
-      hash = normalize(hash);
-
-      if (_active.hash !== hash) {
-        var prev = _active.route;
-        var next = this.match(hash);
-
-        // if we have a previous route, call its `exit`
-        // method and abort if `exit` returns `false`
-        if (prev && prev.exit && prev.exit() === false) {
-          return false
-        }
-
-        // continue with the global `exit` routine.
-        if (_exit) {
-          _exit.call(this, prev);
-        }
-
-        // swap the current route info
-        if (next) { next.hash = hash; }
-        _active.hash  = hash;
-        _active.route = next;
-
-        // call the global enter routine
-        if (_enter) {
-          _enter.call(this, next);
-        }
-
-        // if we have a new route with a `next` method, call it and return
-        if (next && next.enter) {
-          next.enter(next.params);
-          return true
-        }
-
-        // no route, fallback to rescue
-        if (_rescue) {
-          _rescue.call(this, hash);
-        }
-      }
-
-      // no route or the current route has no changes
-      return false
-    },
-
-    /**
-     * Go to the given hash
-     *
-     * @param   {String}  hash    - The target hash
-     * @param   {Boolean} [force] - `true` to always run the callback
-     * @returns {Object}  This chainable object
-     */
-    navigate: function navigate(hash, force) {
-      if (force) {
-        _active.hash = '@';
-      }
-      if (force && normalize(location.hash) === normalize(hash)) {
-        this._run(hash);
-      } else {
-        location.hash = hash;
-      }
-      return this
-    },
-
-    get _routes() {
-      return _routes
-    },
-
-    /**
-     * Default handler for hash changes
-     */
-    _handler: function _handler() {
-      _R._run(location.hash);
-    },
-
-    /**
-     * This route will be automatically selected on page load.
-     *
-     * If a user were to land on your page without a route defined, you can
-     * force them to use a root route.
-     *
-     * @param   {string} [root] - The hash used as root
-     * @returns {object} This chainable object
-     */
-    listen: function listen(root) {
-
-      // check browser haschange support
-      if ('onhashchange' in window) {
-        window.addEventListener('hashchange', _R._handler, true);
-      } else {
-        throw new Error('easyRouter: Your browser has no hashchange support')
-      }
-
-      // normalize root
-      if (root) {
-        root = normalize(root);
-
-        // set a default rescue funtion if there's no one
-        if (!_rescue) {
-          _rescue = function () { location.hash = root; };
-        }
-      }
-
-      // if we have a hash, run it
-      if (location.hash) {
-        this._run(location.hash);
-
-      // else if we have a root, set it (it will run automatically)
-      } else if (root) {
-        location.hash = root;
-      }
-
-      return this
-    },
-
-  };
-
-  // aliases
-  _R.add = _R.concat;
-
-
-  return _R.reset()
-
-})(window);
-
-return router;
+    return router;
 
 })));

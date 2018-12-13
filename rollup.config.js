@@ -1,28 +1,35 @@
 /* eslint prefer-template:0 */
 /* eslint-env node */
 
-import buble from 'rollup-plugin-buble'
-import jscc  from 'rollup-plugin-jscc'
+import sourcemaps from 'rollup-plugin-sourcemaps'
+import cleanup from 'rollup-plugin-cleanup'
+import jscc from 'rollup-plugin-jscc'
 const external = ['fs', 'path']
 
 const banner = `/**
- * easyRouter v${require('./package.json').version}
- * @author aMarCruz
- * @licence MIT
- */
+* easyRouter v${require('./package.json').version}
+* @author aMarCruz
+* @licence MIT
+*/
 /* eslint-disable */`
 
+const isDev = process.env.BUILD === 'test'
+
 export default {
-  input: 'src/main.js',
-  name: 'router',
+  input: 'dist/easyrouter.es.js',
   plugins: [
-    jscc(),
-    buble(),
+    isDev ? sourcemaps() : undefined,
+    jscc({
+      asloader: false,
+      prefixes: [/\/[/*]/]
+    }),
+    cleanup({
+      comments: ['jsdoc', 'istanbul']
+    })
   ],
   output: [
     { banner, file: 'dist/easyrouter.js', format: 'cjs' },
-    { banner, file: 'dist/easyrouter.es.js', format: 'es' },
-    { banner, file: 'dist/easyrouter.umd.js', format: 'umd' },
+    { banner, file: 'dist/easyrouter.umd.js', format: 'umd', name: 'router' }
   ],
-  external,
+  external
 }

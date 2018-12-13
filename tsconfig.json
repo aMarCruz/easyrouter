@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "module": "es6",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "removeComments": false,
+    "sourceMap": true,
+    "strict": true,
+    "stripInternal": true,
+    "target": "es5",
+  },
+  "include": [
+    "src/*.ts"
+  ]
+}

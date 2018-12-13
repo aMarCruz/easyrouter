@@ -2,11 +2,34 @@
 
 ## \[Unreleased]
 
-### Changes
+### Added
+
+- Global callbacks `onEnter` and `onExit`.
+- TypeScript v3 typings.
+- Test for 100% coverage.
+
+### Changed
 
 - Update devDependencies and ESLint rules.
 - Lock version of expect in devDependencies.
 - New Changelog format.
+- Refactorized with TypeScript v3.
+  - Replaced main.js with easyrouter.es.ts, that ouputs the ESM module.
+  - Changed global callbacks by new ones with different names.
+  - Make the route methods more consistent in its parameters and context.
+  - Separate test for various fatures.
+
+### Fixed
+
+- The case of the parameter names and values are respected.
+- The `rescue` callback is only called when a hash exists.
+- The `exit` method of the routes is called with the previous parameters.
+- The hashes '#' and '#/' are quivalent.
+
+### Removed
+
+- Global callbacks `enter` and `exit`, replaced by new ones to clarify its use. Its behavior is different from the methods `enter` and `exit` of the routes.
+- The router `concat` method, use `add`.
 
 ## \[1.0.0] - 2017-10-12
 

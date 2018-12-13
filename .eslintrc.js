@@ -10,7 +10,7 @@ module.exports = {
   plugins: [],
 
   parserOptions: {
-    ecmaVersion: 6,
+    ecmaVersion: 5,
     impliedStrict: YES,
     sourceType: 'module',
   },
@@ -18,7 +18,8 @@ module.exports = {
   // https://github.com/sindresorhus/globals/blob/master/globals.json
   env: {
     browser: YES,
-    es6: YES,
+    node: YES,
+    mocha: YES,
   },
 
   // https://github.com/eslint/eslint/blob/master/conf/eslint-recommended.js
@@ -34,7 +35,7 @@ module.exports = {
     'block-scoped-var': ON,
     'block-spacing': ERROR,
     'brace-style': [ON, '1tbs', { allowSingleLine: true }],
-    'comma-dangle': [ON, 'always-multiline'],
+    'comma-dangle': [ON, 'never'],
     'comma-spacing': ERROR,
     'comma-style': [ON, 'last'],
     'complexity': [ON, 8],   // default is 20
@@ -56,19 +57,16 @@ module.exports = {
     'keyword-spacing': ON,
     'linebreak-style': [ON, 'unix'],
     'max-depth': [ON, 3],
-    'max-len': [1, 120, 4, { ignoreUrls: YES, ignoreRegExpLiterals: YES }],
-    'max-lines-per-function': [ON, { max: 25, skipBlankLines: YES, skipComments: YES }],
-    'max-lines': [ON, { max: 250, skipBlankLines: YES, skipComments: YES }],
     'max-nested-callbacks': [ON, 3],  // default is 10
     'max-params': [ON, 3],
-//    'max-statements': [ON, 12],
     'new-parens': ON,
     'no-alert': ON,
     'no-array-constructor': ON,
     'no-caller': ON,
     'no-catch-shadow': ON,
     'no-confusing-arrow': [ON, { allowParens: YES }],
-    'no-console': ON,
+    'no-console': WARN,
+    'no-debugger': WARN,
     'no-div-regex': ON,
     'no-duplicate-imports': [ON, { includeExports: YES }],
     'no-else-return': ON,
@@ -113,7 +111,7 @@ module.exports = {
     'no-useless-computed-key': ON,
     'no-useless-rename': ON,
     'no-useless-return': ON,
-    'no-var': ON,
+//    'no-var': ON,
     'no-whitespace-before-property': ON,
     'no-with': ON,
     'object-curly-spacing': [ON, 'always'],
@@ -143,19 +141,4 @@ module.exports = {
     'yield-star-spacing': ON,
     'yoda': ERROR,
   },
-  overrides: [
-    {
-      files: ['**/test/**'],
-      env: {
-        mocha: YES,
-      },
-      rules: {
-        'no-console': OFF,
-        'max-len': OFF,
-        'max-lines': OFF,
-        'max-lines-per-function': OFF,
-        'max-statements': OFF,
-      },
-    },
-  ],
 }

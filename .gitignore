@@ -70,3 +70,4 @@ pids
 .lock-wscript
 
 ~*
+.nyc_output

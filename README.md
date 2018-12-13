@@ -6,7 +6,7 @@
 
 Tiny, fast, easy, yet powerful hash router in JavaScript.
 
-* About 2K minified, 1K gzipped
+* About 3K minified, 1K gzipped
 * No performance drop as you add routes
 * Order of route declaration doesn't matter: the most specific route wins
 * Parses query strings (See NOTE)

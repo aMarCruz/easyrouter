@@ -1,4 +1,4 @@
-dist/**
+dist/
 **/coverage
 **/test/expect
 **/test/fixtures
