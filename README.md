@@ -20,7 +20,7 @@ Tiny, fast, easy, yet powerful hash router in JavaScript.
 For easyRoute to recognize query strings, this must follow the hash (be part of it).
 This is not standard the assignment through the `href` **property** does not work, you must use literal anchors or `setAttribute`.
 
-### Example
+Example:
 
 ```js
 location.hash = `#/customers/1?order=${orderNo}`
@@ -72,14 +72,16 @@ easyrouter.umd.js | Generic UMD build
 
 In the root is `easyrouter.min.js`, a minified UMD version for browsers that stores the router instance in the global variable `window.router`.
 
-## Example
+## Usage
+
+
 
 ```js
 // Require the router if using brunch, browserify, webpack, etc.
 const router = require('easyrouter')
 
 function login () {
-  // display login
+  // show a login form
 }
 
 // params can be null if the new hash was not registered in the route map.
@@ -112,7 +114,6 @@ const routes = [
     path: '#/login',
     enter: login
   }
-
 ]
 
 // Use the `add` method to add all the routes.
@@ -142,7 +143,7 @@ router
 
 ## API
 
-### `add(routes [, callback])`
+### `add(routes [, callback])` ⇒ router
 
 Registers one or more routes.
 
@@ -155,18 +156,18 @@ callback  | Optional `enter` method for routes without one.
 
 _Note:_ The alias `concat` was removed in v2.0
 
-### `clear()`
+### `clear()` ⇒ router
 
 Empties the routes.
 
 The global callbacks (onEnter, onExit, rescue) are preserved.
 
-### `getContext()`
+### `getContext()` ⇒ context
 
 Returns the context of the router.
 It includes the last saved route or `null` if there's no such route (like after a `reset`).
 
-The content returned object:
+The object returned by `getContext` has this properties:
 
 Property  | Type     | Description
 --------- | -------- | -----------
@@ -177,7 +178,7 @@ onEnter   | Function | Global callback registered by the `onEnter` method.
 onExit    | Function | Global callback registered by the `onExit` method.
 rescue    | Function | Fallback function registered by the `rescue` method.
 
-### `listen(root)`
+### `listen(root)` ⇒ router
 
 Start handling hash changes.
 
@@ -185,19 +186,19 @@ Start handling hash changes.
 
 This route will be automatically selected in the page load, unless the page already has a hash.
 
-### `match(hash)`
+### `match(hash)` ⇒ route context
 
 Returns an object with the route for a matching hash.
 
 The route includes the parameters given in the hash.
 
-### `navigate(hash [, force])`
+### `navigate(hash [, force])` ⇒ router
 
 Goes to the given `hash`.
 
 If `force` is `true`, the callback runs even if the hash is current.
 
-### `onEnter(callback)`
+### `onEnter(callback)` ⇒ router
 
 Set the global callback called _always_ that the hash changes, after the `route.query`, `route.exit` and `router.onExit` methods.
 
@@ -207,7 +208,7 @@ _NOTE:_
 
 This callback will be called even if there's no match for the next hash or the new location has no hash. In this cases the parameter passed to the callback will be `null`. In the last case it will be called once, when the hash is removed.
 
-### `onExit(callback)`
+### `onExit(callback)` ⇒ router
 
 Set the global callback called when the hash changes, before the `route.enter`, `router.onEnter` and `router.rescue` methods.
 
@@ -217,7 +218,7 @@ _NOTE:_
 
 This callback will be called even if there's no match for the previous hash or the previous location has no hash. In this cases the parameter passed to the callback will be `null`.
 
-### `rescue(callback)`
+### `rescue(callback)` ⇒ router
 
 Set the global callback called with the current hash when no rule matches the hash or the route has no an `enter` method.
 
@@ -225,21 +226,21 @@ If you do not provide a `rescue` method, the router will set one to redirect you
 
 This lets you provide instant user feedback if they click an undefined route.
 
-### `reset()`
+### `reset()` ⇒ router
 
 Clears the routes and global callbacks, without stopping the router.
 
 Generally, this method will be followed by `stop` or by a re-initialization.
 
-### `route(rule)`
+### `route(rule)` ⇒ route object
 
 Returns the route object assigned to the given `rule`.
 
 The parameter is the rule used to register a route, it is not the hash of the current location.
 
-The returned object does not includes the hash nor parameters values.
+The returned route does not includes the hash nor parameters values.
 
-### `stop()`
+### `stop()` ⇒ router
 
 Stops the router.
 
@@ -326,6 +327,12 @@ function oldRouteExit () {
   }
 }
 ```
+
+## TODO
+
+- [ ] Rules with optional parameters
+- [ ] CI test for more browsers
+- [ ] Enhanced documentation
 
 ## Support my Work
 
