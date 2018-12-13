@@ -1,8 +1,10 @@
 # EasyRouter
 
-[![npm Version][npm-image]][npm-url]
-[![Size][size-image]][size-url]
-[![License][license-image]][license-url]
+[![npm Version][npm-badge]][npm-url]
+[![License][license-badge]][license-url]
+[![Build Status][travis-badge]][travis-url]
+[![Coverage][codecov-badge]][codecov-url]
+[![Size][size-badge]][size-url]
 
 Tiny, fast, easy, yet powerful hash router in JavaScript.
 
@@ -339,10 +341,14 @@ Thanks for your support!
 
 The [MIT License](LICENCE) (MIT)
 
-[npm-image]:      https://img.shields.io/npm/v/easyrouter.svg
+[npm-badge]:      https://img.shields.io/npm/v/easyrouter.svg
 [npm-url]:        https://www.npmjs.com/package/easyrouter
-[license-image]:  https://img.shields.io/npm/l/express.svg
+[license-badge]:  https://img.shields.io/npm/l/express.svg
 [license-url]:    https://github.com/aMarCruz/easyrouter/blob/master/LICENSE
-[size-image]:     https://badges.herokuapp.com/size/npm/easyrouter/easyrouter.min.js
+[size-badge]:     https://badges.herokuapp.com/size/npm/easyrouter/easyrouter.min.js
 [size-url]:       https://www.npmjs.com/package/easyrouter
+[travis-badge]:   https://travis-ci.org/aMarCruz/easyrouter.svg?branch=master
+[travis-url]:     https://travis-ci.org/aMarCruz/easyrouter
+[codecov-badge]:  https://codecov.io/gh/aMarCruz/easyrouter/branch/master/graph/badge.svg
+[codecov-url]:    https://codecov.io/gh/aMarCruz/easyrouter
 [kofi-url]:       https://ko-fi.com/C0C7LF7I
