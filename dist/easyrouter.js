@@ -1,5 +1,5 @@
 /**
-* easyRouter v1.0.0
+* easyRouter v2.0.0
 * @author aMarCruz
 * @licence MIT
 */
@@ -35,12 +35,6 @@ var router = (function easyRouter(window, UNDEF) {
                 return hash.replace(R_HASH, '#/$1');
         }
     };
-    var _equ = function (a, b) {
-        if (a.path.toLowerCase() !== b.path.toLowerCase()) {
-            return false;
-        }
-        return _split(a.path).every(function (p) { return !(p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]); });
-    };
     var _split = function (hash) {
         var parts = hash.replace(R_HASH, '$1').split('/');
         var item;
@@ -55,6 +49,12 @@ var router = (function easyRouter(window, UNDEF) {
             }
         }
         return parts;
+    };
+    var _equ = function (a, b) {
+        if (a.path.toLowerCase() !== b.path.toLowerCase()) {
+            return false;
+        }
+        return _split(a.path).every(function (p) { return !(p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]); });
     };
     var _make = function (src, hash, params) {
         if (!src) {
@@ -71,7 +71,7 @@ var router = (function easyRouter(window, UNDEF) {
         return dest;
     };
     var _seek = function (part, hash, unesc) {
-        var parts = part.replace(R_HASH, '$1').split('/');
+        var parts = part.replace(R_HASH, '$1').split('/').filter(Boolean);
         var parms = {};
         var route = _routes;
         var name;

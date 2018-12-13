@@ -40,16 +40,6 @@ var router = (function easyRouter(window, UNDEF) {
         }
     };
     /**
-     * Determinate if two route paths have the same params.
-     */
-    var _equ = function (a, b) {
-        // First try to avoid slow cycle
-        if (a.path.toLowerCase() !== b.path.toLowerCase()) {
-            return false;
-        }
-        return _split(a.path).every(function (p) { return !(p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]); });
-    };
-    /**
      * Remove the first '#/' and trailing slashes from the given hash
      * and return its parts.
      */
@@ -67,6 +57,16 @@ var router = (function easyRouter(window, UNDEF) {
             }
         }
         return parts;
+    };
+    /**
+     * Determinate if two route paths have the same params.
+     */
+    var _equ = function (a, b) {
+        // First try to avoid slow cycle
+        if (a.path.toLowerCase() !== b.path.toLowerCase()) {
+            return false;
+        }
+        return _split(a.path).every(function (p) { return !(p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]); });
     };
     /**
      * Makes a shallow copy of route `src`.
@@ -90,7 +90,8 @@ var router = (function easyRouter(window, UNDEF) {
      * Find the route which the given hash belongs to.
      */
     var _seek = function (part, hash, unesc) {
-        var parts = part.replace(R_HASH, '$1').split('/');
+        // can't use _split with a hash
+        var parts = part.replace(R_HASH, '$1').split('/').filter(Boolean);
         var parms = {};
         var route = _routes;
         var name;

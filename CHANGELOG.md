@@ -1,6 +1,6 @@
 # Changes for easyRouter
 
-## \[Unreleased]
+## \[2.0.0] - 2018-12-13
 
 ### Added
 

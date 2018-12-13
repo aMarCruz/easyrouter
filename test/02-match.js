@@ -14,6 +14,9 @@ describe('match', function () {
     }, {
       path: '#/recurso/nuevo',
       title: 'Recursos'
+    }, {
+      path: '#/',
+      title: 'Home'
     }
   ]
 
@@ -47,6 +50,23 @@ describe('match', function () {
 
     expect(result).toBeAn('object').toExist()
     expect(result).toInclude({ path: path, hash: hash })
+  })
+
+  it('must find the correct route for hash `/`, `#`, or empty', function () {
+    var hash = ''
+    var result = router.match(hash)
+    expect(result).toBeAn('object').toExist()
+    expect(result).toInclude({ hash: hash, title: 'Home' })
+
+    hash = '#'
+    result = router.match(hash)
+    expect(result).toBeAn('object').toExist()
+    expect(result).toInclude({ hash: hash, title: 'Home' })
+
+    hash = '/'
+    result = router.match(hash)
+    expect(result).toBeAn('object').toExist()
+    expect(result).toInclude({ hash: hash, title: 'Home' })
   })
 
   it('must give precendence to parameterless routes', function () {

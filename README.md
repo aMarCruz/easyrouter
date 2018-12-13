@@ -20,7 +20,7 @@ Tiny, fast, easy, yet powerful hash router in JavaScript.
 For easyRoute to recognize query strings, this must follow the hash (be part of it).
 This is not standard the assignment through the `href` **property** does not work, you must use literal anchors or `setAttribute`.
 
-Example:
+### Example
 
 ```js
 location.hash = `#/customers/1?order=${orderNo}`
@@ -32,9 +32,11 @@ anchor.setAttribute(`#/customers/1?order=${orderNo}`)
 
 It is not likely that this restriction can change.
 
-## Changes in v1.0.0
+## Changes in v2.0.0
 
 The most important change is the renaming of the methods `enter` and `exit` of the router, which are now `onEnter` and `onExit`, and the removal of the alias `concat`.
+
+From v2.0 the hash is not case sensitive, except in the parameters' name and value.
 
 Please see the [Changelog](CHANGELOG.md) for more information.
 
@@ -151,7 +153,7 @@ Parameter | Description
 routes    | Can be an object or array of objects, their property `path` specifies the rule.
 callback  | Optional `enter` method for routes without one.
 
-_Note:_ The alias `concat` was removed in v1.0
+_Note:_ The alias `concat` was removed in v2.0
 
 ### `clear()`
 
@@ -159,7 +161,7 @@ Empties the routes.
 
 The global callbacks (onEnter, onExit, rescue) are preserved.
 
-### getContext
+### `getContext()`
 
 Returns the context of the router.
 It includes the last saved route or `null` if there's no such route (like after a `reset`).

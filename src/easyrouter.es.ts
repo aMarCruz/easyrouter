@@ -81,21 +81,6 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
   }
 
   /**
-   * Determinate if two route paths have the same params.
-   */
-  const _equ = (a: RouteContext, b: RouteContext) => {
-
-    // First try to avoid slow cycle
-    if (a.path.toLowerCase() !== b.path.toLowerCase()) {
-      return false
-    }
-
-    return _split(a.path).every((p) => !(
-      p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]
-    ))
-  }
-
-  /**
    * Remove the first '#/' and trailing slashes from the given hash
    * and return its parts.
    */
@@ -114,6 +99,21 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
     }
 
     return parts
+  }
+
+  /**
+   * Determinate if two route paths have the same params.
+   */
+  const _equ = (a: RouteContext, b: RouteContext) => {
+
+    // First try to avoid slow cycle
+    if (a.path.toLowerCase() !== b.path.toLowerCase()) {
+      return false
+    }
+
+    return _split(a.path).every((p) => !(
+      p[0] === S_PARM_PREFIX && (p = p.substr(1)) && a.params[p] !== b.params[p]
+    ))
   }
 
   /**
@@ -143,7 +143,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
    * Find the route which the given hash belongs to.
    */
   const _seek = (part: string, hash: string, unesc: UnescapeFn) => {
-    const parts = part.replace(R_HASH, '$1').split('/')
+    // can't use _split with a hash
+    const parts = part.replace(R_HASH, '$1').split('/').filter(Boolean)
     const parms = {} as Params
     let route = _routes
     let name
