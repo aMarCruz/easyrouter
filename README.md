@@ -17,17 +17,17 @@ Tiny, fast, easy, yet powerful hash router in JavaScript.
 
 ## NOTE
 
-For easyRoute to recognize query strings, this must follow the hash (be part of it).
-This is not standard the assignment through the `href` **property** does not work, you must use literal anchors or `setAttribute`.
+For easyRoute to recognize query strings, the query must follow the hash (be part of it).
+This is not standard and the assignment through the `href` **property** will not work, you must assign the location directly or use `setAttribute`.
 
 Example:
 
 ```js
-location.hash = `#/customers/1?order=${orderNo}`
+location.hash = `/customers/1?order=${orderNo}`
 
 // or...
-const anchor = document.createElement('a')
-anchor.setAttribute(`#/customers/1?order=${orderNo}`)
+const anchor = document.getElementById('anchor-id')
+anchor.setAttribute('href', `#/customers/1?order=${orderNo}`)
 ```
 
 It is not likely that this restriction can change.
@@ -74,27 +74,36 @@ In the root is `easyrouter.min.js`, a minified UMD version for browsers that sto
 
 ## Usage
 
-
-
 ```js
 // Require the router if using brunch, browserify, webpack, etc.
 const router = require('easyrouter')
 
-function login () {
-  // show a login form
+// handler for '#/login', defined by the `enter` method of the route.
+const login = function () {
+  // Here you can, by example, show a popup or change all the content
+  // of the page.
+  console.log('Login')
 }
 
-// params can be null if the new hash was not registered in the route map.
-function resourceEditor (params) {
+// This function handles routes for two rules, one of them has a placeholder
+// ':id' whose value will be extracted from the hash that enters the route
+// and placed in the property 'id' of 'params'.
+// 'title' is a custom property of the route context defined by us.
+const resourceEditor = function (params) {
+  $('#header').html(this.title)
+
   if (params.id) {
-    // edit existing resource
+    console.log(`Editing the resource ${params.id}`)
   } else {
-    // edit a new resource
+    console.log(`Creating a new resource.`)
   }
 }
 
-// Define one or more routes.
-// `enter` method takes precedence over the callback of `concat`
+// Data for the routes.
+// 'path' property defines the rule and is the only required property.
+// 'title' is a custom property and will be part of the route context.
+// 'enter' methods here takes precedence over the callback passed to
+// the router `add` function.
 const routes = [
   {
     path: '#/resources',
@@ -116,13 +125,14 @@ const routes = [
   }
 ]
 
-// Use the `add` method to add all the routes.
-// Its additional parameter is the default `enter` method for each route.
 router
+  // The `add` method adds routes without eliminating the previous ones.
+  // Its additional parameter is the default `enter` method for the routes
+  // that are added.
   .add(routes, (params) => {
-    // default enter method executed in the context of the current route.
-    // the params are the parameter values given by the current hash.
-    console.log(this.hash)
+    // The `enter` method is executed in the context of the current route
+    // and receives a parameter with values in the current hash.
+    console.log(this.hash, params)
   })
   .onExit((route) => {
     // global callback called on exit a previous route
@@ -136,8 +146,8 @@ router
     // executed for non-existing routes or routes without `enter` method
     location.href = 'errors/404.html'
   })
-  // start the router using "#/login" for users that arrives to this
-  // page without a hash
+  // starts the router using "#/login" for users that arrives to this
+  // page without a hash.
   .listen('#login')
 ```
 
