@@ -12,7 +12,8 @@ var router = (function easyRouter(window, UNDEF) {
     // tslint:disable:no-var-keyword
     var _active = false;
     var _hash = '';
-    var _route = NULL;
+    var _prevRoute = NULL;
+    var _lastRoute = NULL;
     var _routes = {};
     // global callbacks
     var _rescue;
@@ -181,7 +182,7 @@ var router = (function easyRouter(window, UNDEF) {
         hash = _normalize(hash);
         // Must preserve the case of the hash
         if (_hash.toLowerCase() !== hash.toLowerCase()) {
-            var prev = _route;
+            var prev = _lastRoute;
             var next = R.match(hash);
             // Hook for query-string changes through the `query` method of the route.
             // It runs only if we have the same params for the non-queryString parts
@@ -196,14 +197,15 @@ var router = (function easyRouter(window, UNDEF) {
             }
             // continue with the global `exit` routine.
             if (_onExit) {
-                _onExit.call(R, prev);
+                _onExit.call(R, prev, next);
             }
             // swap the current route info
             _hash = hash;
-            _route = next;
+            _prevRoute = prev;
+            _lastRoute = next;
             // call the global enter routine
             if (_onEnter) {
-                _onEnter.call(R, next);
+                _onEnter.call(R, next, prev);
             }
             // if we have a new route with a `next` method, call it and return
             if (next && next.enter) {
@@ -265,11 +267,13 @@ var router = (function easyRouter(window, UNDEF) {
          * @returns {Router.Context}
          */
         getContext: function () {
-            var route = _route;
+            var last = _lastRoute;
+            var prev = _prevRoute;
             return {
                 isActive: _active,
                 lastHash: _hash,
-                lastRoute: route ? _make(route, route.hash, route.params) : null,
+                lastRoute: last ? _make(last, last.hash, last.params) : null,
+                prevRoute: prev ? _make(prev, prev.hash, prev.params) : null,
                 onEnter: _onEnter,
                 onExit: _onExit,
                 rescue: _rescue,
@@ -421,7 +425,7 @@ var router = (function easyRouter(window, UNDEF) {
          */
         reset: function () {
             _hash = '';
-            _route = NULL;
+            _lastRoute = NULL;
             _rescue = _onEnter = _onExit = UNDEF;
             return R.clear();
         },

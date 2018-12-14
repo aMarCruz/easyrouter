@@ -121,4 +121,43 @@ describe('Misc', function () {
     }
   })
 
+  it('`getContext` must refresh in each hash change', function () {
+    var path1 = '#/123'
+    var path2 = '#/abc'
+    var path3 = '#/xyz'
+    var routes = [
+      { path: path1 },
+      { path: path2 },
+      { path: path3 }
+    ]
+
+    var ctx
+    router.reset().stop().add(routes, noop)
+
+    router._run(path1)
+    ctx = router.getContext()
+    expect(ctx).toBeAn('object').toExist()
+    expect(ctx.prevRoute).toNotExist()
+    expect(ctx.lastRoute).toExist().toInclude({ path: path1, hash: path1 })
+
+    router._run(path2)
+    ctx = router.getContext()
+    expect(ctx).toBeAn('object').toExist()
+    expect(ctx.prevRoute).toExist().toInclude({ path: path1, hash: path1 })
+    expect(ctx.lastRoute).toExist().toInclude({ path: path2, hash: path2 })
+
+    router._run(path3)
+    ctx = router.getContext()
+    expect(ctx).toBeAn('object').toExist()
+    expect(ctx.prevRoute).toExist().toInclude({ path: path2, hash: path2 })
+    expect(ctx.lastRoute).toExist().toInclude({ path: path3, hash: path3 })
+
+    // must not change
+    router._run(path3)
+    ctx = router.getContext()
+    expect(ctx).toBeAn('object').toExist()
+    expect(ctx.prevRoute).toExist().toInclude({ path: path2, hash: path2 })
+    expect(ctx.lastRoute).toExist().toInclude({ path: path3, hash: path3 })
+  })
+
 })

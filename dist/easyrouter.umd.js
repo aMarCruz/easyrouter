@@ -1,5 +1,5 @@
 /**
-* easyRouter v2.0.0
+* easyRouter v2.0.1
 * @author aMarCruz
 * @licence MIT
 */
@@ -21,7 +21,8 @@
         var _noop = function (s) { return s; };
         var _active = false;
         var _hash = '';
-        var _route = NULL;
+        var _prevRoute = NULL;
+        var _lastRoute = NULL;
         var _routes = {};
         var _rescue;
         var _onEnter;
@@ -153,7 +154,7 @@
         var _run = function (hash) {
             hash = _normalize(hash);
             if (_hash.toLowerCase() !== hash.toLowerCase()) {
-                var prev = _route;
+                var prev = _lastRoute;
                 var next = R.match(hash);
                 if (next && _queryAbort(prev, next)) {
                     return false;
@@ -162,12 +163,13 @@
                     return false;
                 }
                 if (_onExit) {
-                    _onExit.call(R, prev);
+                    _onExit.call(R, prev, next);
                 }
                 _hash = hash;
-                _route = next;
+                _prevRoute = prev;
+                _lastRoute = next;
                 if (_onEnter) {
-                    _onEnter.call(R, next);
+                    _onEnter.call(R, next, prev);
                 }
                 if (next && next.enter) {
                     next.enter(next.params);
@@ -212,11 +214,13 @@
              * @returns {Router.Context}
              */
             getContext: function () {
-                var route = _route;
+                var last = _lastRoute;
+                var prev = _prevRoute;
                 return {
                     isActive: _active,
                     lastHash: _hash,
-                    lastRoute: route ? _make(route, route.hash, route.params) : null,
+                    lastRoute: last ? _make(last, last.hash, last.params) : null,
+                    prevRoute: prev ? _make(prev, prev.hash, prev.params) : null,
                     onEnter: _onEnter,
                     onExit: _onExit,
                     rescue: _rescue,
@@ -362,7 +366,7 @@
              */
             reset: function () {
                 _hash = '';
-                _route = NULL;
+                _lastRoute = NULL;
                 _rescue = _onEnter = _onExit = UNDEF;
                 return R.clear();
             },

@@ -18,7 +18,7 @@
     "k": "karma start ./test/karma.conf.js",
     "coverage": "nyc report -r=lcov",
     "prebuild": "rimraf -rf ./dist/**",
-    "build": "tsc -p tsconfig-p.json && rollup -c && npm run min",
+    "build": "tsc -p tsconfig-p.json && rollup -c && yarn run min",
     "prepublish": "npm run lint && npm test && npm run build",
     "min": "uglifyjs ./dist/easyrouter.umd.js -m -c -o ./easyrouter.min.js"
   },
