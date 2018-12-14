@@ -105,12 +105,12 @@ declare namespace Router {
 
   type Params = Dict<string>
 
-  type ExitFn     = (this: RouteContext, prevParams: Params) => boolean | void
-  type EnterFn    = (this: RouteContext, currentParams: Params) => void
-  type QueryFn    = (this: RouteContext, currentParams: Params) => boolean | void
-  type OnExitFn   = (this: Router, prevRoute: RouteContext | null) => void
-  type OnEnterFn  = (this: Router, currentRoute: RouteContext | null) => void
-  type RescueFn   = (this: Router, currentHash: string) => void
+  type ExitFn     = (this: RouteContext, oldParams: Params) => boolean | void
+  type EnterFn    = (this: RouteContext, newParams: Params) => void
+  type QueryFn    = (this: RouteContext, newParams: Params) => boolean | void
+  type OnExitFn   = (this: Router, oldRoute: RouteContext | null, newRoute: RouteContext | null) => void
+  type OnEnterFn  = (this: Router, newRoute: RouteContext | null, oldRoute: RouteContext | null) => void
+  type RescueFn   = (this: Router, newHash: string) => void
 
   interface Route {
     /** String with the rule */
@@ -146,6 +146,7 @@ declare namespace Router {
     isActive: boolean,
     lastHash: string,
     lastRoute: RouteContext | null,
+    prevRoute: RouteContext | null,
     onEnter?: OnEnterFn,
     onExit?: OnExitFn,
     rescue?: RescueFn,

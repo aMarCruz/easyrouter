@@ -174,6 +174,7 @@ Property  | Type     | Description
 isActive  | boolean  | Is the router handling hash changes?
 lastHash  | string   | Last handled hash.
 lastRoute | Object   | Last handled route, including hash and parameters.
+prevRoute | Object   | Previous handled route, including hash and parameters.
 onEnter   | Function | Global callback registered by the `onEnter` method.
 onExit    | Function | Global callback registered by the `onExit` method.
 rescue    | Function | Fallback function registered by the `rescue` method.
@@ -202,7 +203,8 @@ If `force` is `true`, the callback runs even if the hash is current.
 
 Set the global callback called _always_ that the hash changes, after the `route.query`, `route.exit` and `router.onExit` methods.
 
-The parameter received by the callback is an object with the next route data, and the default context (`this`) is the router itself.
+The first parameter received by the callback is an object with the new route data, and the default context (`this`) is the router itself.
+The second parameter is the previous route, if any.
 
 _NOTE:_
 
@@ -212,7 +214,8 @@ This callback will be called even if there's no match for the next hash or the n
 
 Set the global callback called when the hash changes, before the `route.enter`, `router.onEnter` and `router.rescue` methods.
 
-The parameter received by the callback is an object with the previous route data, and the default context (`this`) is the router itself.
+The first parameter received by the callback is an object with the previous route data, and the default context (`this`) is the router itself.
+The second one is the new route data.
 
 _NOTE:_
 
@@ -285,7 +288,7 @@ This is the order of event when on hash changes:
   (abort without go back, if it returns `false`)
                        |
                        v
-             router.onExit(oldRoute)
+        router.onExit(oldRoute, newRoute)
   (called with undefined if there's no old route)
                        |
                        v
@@ -293,7 +296,7 @@ This is the order of event when on hash changes:
     again this hash will no repeat the process)
                        |
                        v
-            router.onEnter(newRoute)
+        router.onEnter(newRoute, oldRoute)
                        |
                        v
  there's a match with an `enter` method for the hash?

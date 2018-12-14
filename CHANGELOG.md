@@ -1,5 +1,12 @@
 # Changes for easyRouter
 
+## \[2.0.1] - 2018-12-14
+
+### Added
+
+- Information of the previous route in `getContext` through the property `prevRoute`, and to the `onEnter` callback as a second parameter.
+- Information of the new route to the `onExit` callback as a second parameter.
+
 ## \[2.0.0] - 2018-12-13
 
 ### Added

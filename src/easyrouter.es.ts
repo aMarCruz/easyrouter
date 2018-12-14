@@ -50,7 +50,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
   // tslint:disable:no-var-keyword
   var _active = false
   var _hash   = ''
-  var _route  = NULL as RouteContext | null
+  var _prevRoute = NULL as RouteContext | null
+  var _lastRoute = NULL as RouteContext | null
   var _routes = {} as ChainedRoute
   // global callbacks
   var _rescue: Router.RescueFn | undefined
@@ -256,7 +257,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
 
     // Must preserve the case of the hash
     if (_hash.toLowerCase() !== hash.toLowerCase()) {
-      const prev = _route
+      const prev = _lastRoute
       const next = R.match(hash)
 
       // Hook for query-string changes through the `query` method of the route.
@@ -274,16 +275,17 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
 
       // continue with the global `exit` routine.
       if (_onExit) {
-        _onExit.call(R, prev)
+        _onExit.call(R, prev, next)
       }
 
       // swap the current route info
       _hash = hash
-      _route = next
+      _prevRoute = prev
+      _lastRoute = next
 
       // call the global enter routine
       if (_onEnter) {
-        _onEnter.call(R, next)
+        _onEnter.call(R, next, prev)
       }
 
       // if we have a new route with a `next` method, call it and return
@@ -356,11 +358,14 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
      * @returns {Router.Context}
      */
     getContext() {
-      const route = _route
+      const last = _lastRoute
+      const prev = _prevRoute
+
       return {
         isActive: _active,
         lastHash: _hash,
-        lastRoute: route ? _make(route, route.hash, route.params) : null,
+        lastRoute: last ? _make(last, last.hash, last.params) : null,
+        prevRoute: prev ? _make(prev, prev.hash, prev.params) : null,
         onEnter: _onEnter,
         onExit: _onExit,
         rescue: _rescue,
@@ -527,7 +532,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
      */
     reset() {
       _hash  = ''
-      _route = NULL
+      _lastRoute = NULL
       _rescue = _onEnter = _onExit = UNDEF
       return R.clear()
     },
