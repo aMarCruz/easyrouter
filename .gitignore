@@ -13,7 +13,6 @@
 .Spotlight-V100
 .tmproj
 .Trashes
-.vscode
 *.bak
 *.diff
 *.err
@@ -51,5 +50,3 @@ package-lock.*
 pids
 test-files/
 Thumbs.db
-
-!.vscode/launch.json

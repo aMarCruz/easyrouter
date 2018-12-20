@@ -1,5 +1,7 @@
 //#endregion
-var router = (function easyRouter(window, UNDEF) {
+var router = (function easyRouter(window) {
+    //#region Closure data -----------------------------------------------------
+    var UNDEF = void 0;
     var NULL = null;
     /** Matches in $1 the hash without the first "#/" nor final slash */
     var R_HASH = /^#?\/*(.*?)\/*$/;
@@ -7,19 +9,24 @@ var router = (function easyRouter(window, UNDEF) {
     var S_PARM_NAME = '~';
     var S_ROUTE_NODE = '@';
     var S_HASH_EVT = 'hashchange';
-    var _decode = decodeURIComponent;
-    var _noop = function (s) { return s; };
     // tslint:disable:no-var-keyword
+    // Forward declaration of the router object
+    var R;
+    // The internal state
     var _active = false;
     var _hash = '';
     var _prevRoute = NULL;
     var _lastRoute = NULL;
     var _routes = {};
     // global callbacks
-    var _rescue;
-    var _onEnter;
-    var _onExit;
+    var _rescue = UNDEF;
+    var _onEnter = UNDEF;
+    var _onExit = UNDEF;
     // tslint:enable:no-var-keyword
+    //#endregion
+    //#region Private functions ------------------------------------------------
+    var _decode = decodeURIComponent;
+    var _noop = function (s) { return s; };
     /**
      * Check if the paramater is a function.
      */
@@ -161,8 +168,6 @@ var router = (function easyRouter(window, UNDEF) {
         });
         return R;
     };
-    // tslint:disable-next-line:no-var-keyword
-    var R;
     /**
      * Run the query callback if we have the same params of the previous
      * route for the non-queryStr parts (i.e. route is already loaded).
@@ -226,6 +231,7 @@ var router = (function easyRouter(window, UNDEF) {
     var _handler = function () {
         return _run(location.hash);
     };
+    //#endregion
     //#region Public API -------------------------------------------------------
     R = {
         /*#if process.env.BUILD === 'test'
@@ -425,7 +431,7 @@ var router = (function easyRouter(window, UNDEF) {
          */
         reset: function () {
             _hash = '';
-            _lastRoute = NULL;
+            _prevRoute = _lastRoute = NULL;
             _rescue = _onEnter = _onExit = UNDEF;
             return R.clear();
         },
@@ -463,6 +469,6 @@ var router = (function easyRouter(window, UNDEF) {
         },
     };
     //#endregion
-    return R.reset();
-})(window, void 0);
+    return R;
+})(window);
 export default router;

@@ -1,6 +1,7 @@
-dist/
+**/*.md
+**/*.min.js
 **/coverage
 **/test/expect
 **/test/fixtures
-**.md
 ~*
+dist/

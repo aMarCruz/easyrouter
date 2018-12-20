@@ -1,5 +1,5 @@
 /**
-* easyRouter v2.0.1
+* easyRouter v2.0.2
 * @author aMarCruz
 * @licence MIT
 */
@@ -10,23 +10,25 @@
     (global.router = factory());
 }(this, (function () { 'use strict';
 
-    var router = (function easyRouter(window, UNDEF) {
+    var router = (function easyRouter(window) {
+        var UNDEF = void 0;
         var NULL = null;
         var R_HASH = /^#?\/*(.*?)\/*$/;
         var S_PARM_PREFIX = ':';
         var S_PARM_NAME = '~';
         var S_ROUTE_NODE = '@';
         var S_HASH_EVT = 'hashchange';
-        var _decode = decodeURIComponent;
-        var _noop = function (s) { return s; };
+        var R;
         var _active = false;
         var _hash = '';
         var _prevRoute = NULL;
         var _lastRoute = NULL;
         var _routes = {};
-        var _rescue;
-        var _onEnter;
-        var _onExit;
+        var _rescue = UNDEF;
+        var _onEnter = UNDEF;
+        var _onExit = UNDEF;
+        var _decode = decodeURIComponent;
+        var _noop = function (s) { return s; };
         var _fn = function (fn) { return (typeof fn === 'function' ? fn : UNDEF); };
         var _normalize = function (hash) {
             switch (hash) {
@@ -142,7 +144,6 @@
             });
             return R;
         };
-        var R;
         var _queryAbort = function (prev, next) {
             if (prev && prev.query &&
                 _equ(prev, next) && prev.query(next.params) === false) {
@@ -366,7 +367,7 @@
              */
             reset: function () {
                 _hash = '';
-                _lastRoute = NULL;
+                _prevRoute = _lastRoute = NULL;
                 _rescue = _onEnter = _onExit = UNDEF;
                 return R.clear();
             },
@@ -396,8 +397,8 @@
                 return R;
             },
         };
-        return R.reset();
-    })(window, void 0);
+        return R;
+    })(window);
 
     return router;
 

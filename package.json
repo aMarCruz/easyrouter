@@ -1,31 +1,27 @@
 {
   "name": "easyrouter",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "The tiny, fast, easy, yet powerful hash router in JavaScript",
   "main": "dist/easyrouter.js",
   "module": "dist/easyrouter.es.js",
   "browser": "dist/easyrouter.umd.js",
   "source": "src/easyrouter.es.ts",
   "typings": "index.d.ts",
+  "license": "MIT",
   "engines": {
     "node": ">=4.2"
   },
-  "scripts": {
-    "lint": "eslint test/*.js",
-    "pretest": "tsc && rollup --environment BUILD:test -c -m -f cjs -o dist/easyrouter.js",
-    "test": "nyc mocha test/index.js",
-    "prek": "tsc && rollup --environment BUILD:test -c -m -n router -f umd -o dist/easyrouter.umd.js",
-    "k": "karma start ./test/karma.conf.js",
-    "coverage": "nyc report -r=lcov",
-    "prebuild": "rimraf -rf ./dist/**",
-    "build": "tsc -p tsconfig-p.json && rollup -c && yarn run min",
-    "prepublish": "npm run lint && npm test && npm run build",
-    "min": "uglifyjs ./dist/easyrouter.umd.js -m -c -o ./easyrouter.min.js"
+  "author": {
+    "name": "aMarCruz",
+    "email": "amarcruzbox-git@yahoo.com",
+    "url": "https://github.com/aMarCruz"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aMarCruz/easyrouter.git"
+    "url": "https://github.com/aMarCruz/easyrouter.git"
   },
+  "homepage": "https://github.com/aMarCruz/easyrouter#readme",
+  "bugs": "https://github.com/aMarCruz/easyrouter/issues",
   "keywords": [
     "html5",
     "router",
@@ -37,15 +33,17 @@
     "history",
     "hash"
   ],
-  "author": {
-    "name": "aMarCruz",
-    "email": "amarcruzbox-git@yahoo.com",
-    "url": "https://github.com/aMarCruz"
-  },
-  "license": "MIT",
-  "homepage": "https://github.com/aMarCruz/easyrouter#readme",
-  "bugs": {
-    "url": "https://github.com/aMarCruz/easyrouter/issues"
+  "scripts": {
+    "lint": "eslint test/*.js",
+    "pretest": "tsc && rollup --environment BUILD:test -c -m -f cjs -o dist/easyrouter.js",
+    "test": "nyc mocha test/index.js",
+    "prek": "tsc && rollup --environment BUILD:test -c -m -n router -f umd -o dist/easyrouter.umd.js",
+    "k": "karma start ./test/karma.conf.js",
+    "coverage": "nyc report -r=lcov",
+    "prebuild": "rimraf -rf ./dist/**",
+    "build": "tsc -p tsconfig-p.json && rollup -c && yarn run min",
+    "prepublish": "npm run lint && npm test && npm run build",
+    "min": "uglifyjs ./dist/easyrouter.umd.js -m -c -o ./easyrouter.min.js"
   },
   "devDependencies": {
     "@types/karma": "^3.0.1",
