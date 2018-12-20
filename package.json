@@ -1,7 +1,7 @@
 {
   "name": "easyrouter",
   "version": "2.0.1",
-  "description": "Tiny, fast, easy, yet powerful hash router in JavaScript",
+  "description": "The tiny, fast, easy, yet powerful hash router in JavaScript",
   "main": "dist/easyrouter.js",
   "module": "dist/easyrouter.es.js",
   "browser": "dist/easyrouter.umd.js",
@@ -32,7 +32,9 @@
     "routes",
     "javascript",
     "typescript",
+    "browser",
     "location",
+    "history",
     "hash"
   ],
   "author": {
