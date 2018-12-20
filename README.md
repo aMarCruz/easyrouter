@@ -371,9 +371,9 @@ Thanks for your support!
 
 The [MIT License](LICENCE) (MIT)
 
-[npm-badge]:      https://img.shields.io/npm/v/easyrouter.svg
+[npm-badge]:      https://badgen.net/npm/v/easyrouter
 [npm-url]:        https://www.npmjs.com/package/easyrouter
-[license-badge]:  https://img.shields.io/npm/l/express.svg
+[license-badge]:  https://badgen.net/npm/license/easyrouter
 [license-url]:    https://github.com/aMarCruz/easyrouter/blob/master/LICENSE
 [size-badge]:     https://badgen.net/bundlephobia/min/easyrouter
 [size-url]:       https://bundlephobia.com/result?p=easyrouter

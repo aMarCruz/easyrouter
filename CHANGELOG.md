@@ -1,5 +1,11 @@
 # Changes for easyRouter
 
+## \[Unreleased]
+
+### Changed
+
+- Replaced shield.io with [badgen.net](https://badgen.net) badges.
+
 ## \[2.0.2] - 2018-12-20
 
 ### Changed
