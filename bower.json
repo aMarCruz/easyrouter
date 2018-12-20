@@ -1,8 +1,8 @@
 {
   "name": "easyrouter",
-  "description": "Tiny, fast, easy, yet powerful hash router in JavaScript",
+  "description": "The tiny, fast, easy, yet powerful hash router in JavaScript",
   "main": "dist/easyrouter.umd.js",
-  "module": "dist/easyrouter.es6.js",
+  "module": "dist/easyrouter.es.js",
   "moduleType": [
     "amd",
     "globals",
@@ -17,13 +17,18 @@
   "keywords": [
     "html5",
     "router",
+    "routes",
     "javascript",
+    "typescript",
+    "browser",
     "location",
+    "history",
     "hash"
   ],
   "homepage": "https://github.com/aMarCruz/easyrouter",
   "ignore": [
     "**/.*",
+    ".vscode",
     "node_modules",
     "bower_components",
     "test",
