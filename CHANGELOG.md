@@ -2,6 +2,11 @@
 
 ## \[Unreleased]
 
+### Changed
+
+- Update Readme and description.
+- Code reorganization. Removes redundant call to `reset` and defines `UNDEF` in the closure.
+
 ### Fixed
 
 - Readme errors.

@@ -32,8 +32,11 @@ interface IRouter {
 
 //#endregion
 
-const router = (function easyRouter (window: Window, UNDEF: undefined) {
+const router = (function easyRouter (window: Window) {
 
+  //#region Closure data -----------------------------------------------------
+
+  const UNDEF = void 0 as undefined
   const NULL = null as null
 
   /** Matches in $1 the hash without the first "#/" nor final slash */
@@ -44,20 +47,30 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
   const S_ROUTE_NODE  = '@'
   const S_HASH_EVT    = 'hashchange'
 
-  const _decode = decodeURIComponent
-  const _noop   = (s: string) => s
-
   // tslint:disable:no-var-keyword
+
+  // Forward declaration of the router object
+  var R: IRouter
+
+  // The internal state
   var _active = false
   var _hash   = ''
-  var _prevRoute = NULL as RouteContext | null
-  var _lastRoute = NULL as RouteContext | null
+  var _prevRoute: RouteContext | null = NULL
+  var _lastRoute: RouteContext | null = NULL
   var _routes = {} as ChainedRoute
+
   // global callbacks
-  var _rescue: Router.RescueFn | undefined
-  var _onEnter: Router.OnEnterFn | undefined
-  var _onExit: Router.OnExitFn | undefined
+  var _rescue: Router.RescueFn | undefined   = UNDEF
+  var _onEnter: Router.OnEnterFn | undefined = UNDEF
+  var _onExit: Router.OnExitFn | undefined   = UNDEF
+
   // tslint:enable:no-var-keyword
+
+  //#endregion
+  //#region Private functions ------------------------------------------------
+
+  const _decode = decodeURIComponent
+  const _noop   = (s: string) => s
 
   /**
    * Check if the paramater is a function.
@@ -231,9 +244,6 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
     return R
   }
 
-  // tslint:disable-next-line:no-var-keyword
-  var R: IRouter
-
   /**
    * Run the query callback if we have the same params of the previous
    * route for the non-queryStr parts (i.e. route is already loaded).
@@ -311,6 +321,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
     return _run(location.hash)
   }
 
+  //#endregion
   //#region Public API -------------------------------------------------------
 
   R = {
@@ -532,7 +543,7 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
      */
     reset() {
       _hash  = ''
-      _lastRoute = NULL
+      _prevRoute = _lastRoute = NULL
       _rescue = _onEnter = _onExit = UNDEF
       return R.clear()
     },
@@ -577,8 +588,8 @@ const router = (function easyRouter (window: Window, UNDEF: undefined) {
 
   //#endregion
 
-  return R.reset()
+  return R
 
-})(window, void 0)
+})(window)
 
 export default router
